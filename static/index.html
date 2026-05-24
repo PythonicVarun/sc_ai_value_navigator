@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Supply Chain AI Value Navigator</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+    </head>
+
+    <body>
+        <header class="topbar">
+            <div class="brand">
+                <div class="logo-mark" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <path
+                            d="M4 22 L10 12 L16 18 L22 8 L28 16"
+                            stroke="#F26A2E"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <circle cx="10" cy="12" r="2" fill="#F26A2E" />
+                        <circle cx="22" cy="8" r="2" fill="#1F2933" />
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title">
+                        Supply Chain AI Value Navigator
+                    </div>
+                    <div class="brand-subtitle">
+                        Pre-sales cockpit · Straive &middot; Gramener
+                    </div>
+                </div>
+            </div>
+            <nav class="tabs" role="tablist">
+                <button
+                    class="tab active"
+                    data-tab="map"
+                    role="tab"
+                    aria-selected="true"
+                    data-icon="map"
+                    data-icon-size="14"
+                >
+                    <span class="tab-num">01</span>
+                    <span class="tab-label">Value Chain Map</span>
+                </button>
+                <button
+                    class="tab"
+                    data-tab="calc"
+                    role="tab"
+                    aria-selected="false"
+                    data-icon="sigma"
+                    data-icon-size="14"
+                >
+                    <span class="tab-num">02</span>
+                    <span class="tab-label">Opportunity Calculator</span>
+                </button>
+            </nav>
+            <div class="topbar-meta">
+                <button
+                    id="theme-toggle"
+                    class="theme-toggle"
+                    type="button"
+                    title="Switch theme"
+                    aria-label="Switch theme"
+                ></button>
+                <div id="status-pill" class="status-pill status-loading">
+                    <span class="status-dot"></span
+                    ><span id="status-text">Initialising…</span>
+                </div>
+            </div>
+        </header>
+
+        <div id="banner-host"></div>
+
+        <!-- ====================== TAB 1: VALUE CHAIN MAP ====================== -->
+        <main id="tab-map" class="tab-panel active">
+            <div class="resizable-container rc-right">
+                <aside class="sidebar">
+                    <div class="sidebar-section">
+                        <label class="field">
+                            <span class="field-label" data-icon="building"
+                                >Organisation</span
+                            >
+                            <input
+                                id="company-input"
+                                type="text"
+                                placeholder="e.g. Swire Coca-Cola"
+                                autocomplete="off"
+                            />
+                        </label>
+                        <div class="action-row">
+                            <button id="analyze-btn" class="btn btn-primary">
+                                <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M21 21l-4.35-4.35" />
+                                    <circle cx="11" cy="11" r="7" />
+                                </svg>
+                                Analyze Company
+                            </button>
+                            <button
+                                id="reset-btn-map"
+                                class="btn btn-ghost btn-icon"
+                                data-icon="refresh"
+                                title="Reset all scenario fields"
+                                aria-label="Reset all scenario fields"
+                            ></button>
+                        </div>
+                        <div id="analyze-helper" class="field-helper">
+                            LLM inference if API key set, manual otherwise.
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <label class="field">
+                            <span class="field-label" data-icon="layers"
+                                >Archetype</span
+                            >
+                            <select id="archetype-select"></select>
+                            <span
+                                id="archetype-helper"
+                                class="helper-grey"
+                            ></span>
+                        </label>
+
+                        <label class="field">
+                            <span class="field-label" data-icon="user"
+                                >Buyer role</span
+                            >
+                            <select id="buyer-select"></select>
+                            <span id="buyer-helper" class="helper-grey"></span>
+                        </label>
+
+                        <label class="field">
+                            <span class="field-label" data-icon="globe"
+                                >Region</span
+                            >
+                            <input
+                                id="region-input"
+                                type="text"
+                                value="Global"
+                            />
+                        </label>
+                        <label class="field">
+                            <span class="field-label" data-icon="barChart"
+                                >Data maturity</span
+                            >
+                            <select id="maturity-select">
+                                <option>Low</option>
+                                <option>Developing</option>
+                                <option selected>Medium</option>
+                                <option>High</option>
+                            </select>
+                        </label>
+
+                        <label class="field">
+                            <span class="field-label" data-icon="crosshair"
+                                >Primary objective</span
+                            >
+                            <select id="objective-select">
+                                <option>Cost to serve reduction</option>
+                                <option>Service level improvement</option>
+                                <option>Working capital reduction</option>
+                                <option>Yield improvement</option>
+                                <option>Revenue growth</option>
+                                <option>Compliance / leakage reduction</option>
+                                <option>Data modernization</option>
+                                <option>
+                                    Sustainability / carbon reduction
+                                </option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="toggle-row">
+                            <label class="toggle">
+                                <input
+                                    id="toggle-relevant"
+                                    type="checkbox"
+                                    checked
+                                />
+                                <span class="toggle-track"></span>
+                                <span class="toggle-label" data-icon="eye"
+                                    >Show relevant only</span
+                                >
+                            </label>
+                        </div>
+                        <div class="toggle-row">
+                            <label class="toggle">
+                                <input id="toggle-quickwins" type="checkbox" />
+                                <span class="toggle-track"></span>
+                                <span class="toggle-label" data-icon="zap"
+                                    >Quick wins only</span
+                                >
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="card inference-card" id="inference-card">
+                            <div class="inference-head">
+                                <span class="inference-title" data-icon="cpu"
+                                    >Inference summary</span
+                                >
+                                <span id="inference-mode" class="chip chip-grey"
+                                    >Manual</span
+                                >
+                            </div>
+                            <div id="inference-body" class="inference-body">
+                                <div class="muted-line">
+                                    Enter a company name and click Analyze
+                                    Company.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <section class="map-main">
+                <div class="map-header">
+                    <div>
+                        <div class="section-eyebrow" data-icon="map">
+                            Tab 01
+                        </div>
+                        <h1 class="section-title">Client value-chain map</h1>
+                        <p class="section-sub">
+                            High-relevance steps glow. Click any card for proof,
+                            levers, and discovery questions.
+                        </p>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-group">
+                            <span class="legend-dot dot-high"></span>High
+                            relevance
+                            <span class="legend-dot dot-med"></span>Medium
+                            <span class="legend-dot dot-low"></span>Low
+                        </div>
+                        <div class="legend-group" id="challenge-legend"></div>
+                    </div>
+                </div>
+
+                <div class="map-canvas" id="map-canvas">
+                    <!-- stages render here -->
+                </div>
+
+                <div class="opportunity-strip-host">
+                    <div class="strip-header">
+                        <h3
+                            class="strip-title"
+                            data-icon="star"
+                            data-icon-size="16"
+                        >
+                            Recommended first-wave initiatives
+                        </h3>
+                        <div class="strip-meta" id="strip-meta"></div>
+                    </div>
+                    <div class="opportunity-strip" id="opportunity-strip"></div>
+                </div>
+            </section>
+
+            <div class="resizable-container rc-left">
+                <aside class="detail-pane" id="detail-pane">
+                    <div class="detail-placeholder">
+                        <div class="placeholder-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                width="32"
+                                height="32"
+                            >
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3" />
+                                <path d="M12 17h.01" />
+                            </svg>
+                        </div>
+                        <div class="placeholder-title">
+                            Select a value-chain step
+                        </div>
+                        <div class="placeholder-sub">
+                            The detail panel shows the why, the levers, the
+                            data, and the proof points pulled from the demo
+                            workbook.
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <!-- ====================== TAB 2: CALCULATOR ====================== -->
+        <main id="tab-calc" class="tab-panel">
+            <div class="resizable-container rc-right">
+                <aside class="sidebar">
+                    <div class="sidebar-section">
+                        <label class="field">
+                            <span class="field-label" data-icon="building"
+                                >Organisation</span
+                            >
+                            <input
+                                id="calc-company"
+                                type="text"
+                                placeholder="Swire Coca-Cola"
+                            />
+                        </label>
+                        <button
+                            id="reset-btn-calc"
+                            class="btn btn-ghost btn-block"
+                            data-icon="refresh"
+                            title="Reset all scenario fields"
+                        >
+                            Reset scenario
+                        </button>
+                        <label class="field" style="margin-top: 14px">
+                            <span class="field-label" data-icon="layers"
+                                >Archetype</span
+                            >
+                            <select id="calc-archetype"></select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Buyer role</span>
+                            <select id="calc-buyer"></select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Region</span>
+                            <input
+                                id="calc-region"
+                                type="text"
+                                value="Global"
+                            />
+                        </label>
+                        <label class="field">
+                            <span class="field-label" data-icon="truck"
+                                >Distribution model</span
+                            >
+                            <select id="calc-distribution">
+                                <option>Owned</option>
+                                <option>Outsourced</option>
+                                <option selected>Hybrid</option>
+                                <option>Not applicable</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <label class="field">
+                            <span class="field-label" data-icon="dollar"
+                                >Annual revenue (USD)</span
+                            >
+                            <div class="input-prefix">
+                                <span class="prefix">$</span>
+                                <input
+                                    id="calc-revenue"
+                                    type="number"
+                                    min="0"
+                                    step="100000000"
+                                    value="3000000000"
+                                />
+                                <span class="suffix" id="revenue-display"
+                                    >3.0B</span
+                                >
+                            </div>
+                        </label>
+                        <label class="field">
+                            <span class="field-label" data-icon="tool"
+                                >Sites / Plants</span
+                            >
+                            <input
+                                id="calc-sites"
+                                type="number"
+                                min="0"
+                                value="14"
+                            />
+                        </label>
+                        <label class="field">
+                            <span class="field-label" data-icon="warehouse"
+                                >Warehouses / Depots</span
+                            >
+                            <input
+                                id="calc-warehouses"
+                                type="number"
+                                min="0"
+                                value="32"
+                            />
+                        </label>
+                        <label class="field">
+                            <span class="field-label" data-icon="package"
+                                >Annual shipments / orders</span
+                            >
+                            <input
+                                id="calc-shipments"
+                                type="number"
+                                min="0"
+                                value="48000000"
+                            />
+                        </label>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <label class="field">
+                            <span class="field-label">Data maturity</span>
+                            <select id="calc-maturity">
+                                <option>Low</option>
+                                <option>Developing</option>
+                                <option selected>Medium</option>
+                                <option>High</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label" data-icon="crosshair"
+                                >Primary objective</span
+                            >
+                            <select id="calc-objective"></select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label" data-icon="shield"
+                                >Inference confidence</span
+                            >
+                            <div class="slider-row">
+                                <input
+                                    id="calc-confidence"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value="75"
+                                />
+                                <span id="calc-confidence-display">75%</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="sidebar-section export-section">
+                        <div class="export-head" data-icon="download">
+                            Export scenario
+                        </div>
+                        <div class="export-row">
+                            <button
+                                id="export-csv"
+                                class="btn btn-ghost"
+                                data-icon="fileText"
+                            >
+                                CSV
+                            </button>
+                            <button
+                                id="export-json"
+                                class="btn btn-ghost"
+                                data-icon="braces"
+                            >
+                                JSON
+                            </button>
+                            <button
+                                id="export-md"
+                                class="btn btn-ghost"
+                                data-icon="fileCode"
+                            >
+                                Markdown
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <section class="calc-main">
+                <div class="map-header">
+                    <div>
+                        <div class="section-eyebrow" data-icon="sigma">
+                            Tab 02
+                        </div>
+                        <h1 class="section-title">Opportunity calculator</h1>
+                        <p class="section-sub">
+                            Transparent low-high ranges. Edit any assumption to
+                            pressure-test the case.
+                        </p>
+                    </div>
+                    <div class="calc-note">
+                        All values are assumption-driven estimates, not
+                        guaranteed benefits.
+                    </div>
+                </div>
+
+                <div class="kpi-grid" id="kpi-grid"></div>
+
+                <div class="calc-block">
+                    <div class="block-header">
+                        <h3 data-icon="trendUp" data-icon-size="16">
+                            Revenue / value drivers
+                        </h3>
+                        <span class="block-sub"
+                            >Inline-editable. % of revenue exposure × AI
+                            leverage.</span
+                        >
+                    </div>
+                    <div class="table-wrap">
+                        <table class="editable-table" id="revenue-table">
+                            <thead>
+                                <tr>
+                                    <th>Driver</th>
+                                    <th class="right">
+                                        Exposure (% of revenue)
+                                    </th>
+                                    <th class="right">AI leverage low</th>
+                                    <th class="right">AI leverage high</th>
+                                    <th class="right">Notional uplift</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="calc-block">
+                    <div class="block-header">
+                        <h3 data-icon="pieChart" data-icon-size="16">
+                            Cost pools &amp; AI-addressable heads
+                        </h3>
+                        <span class="block-sub"
+                            >Defaults from archetype assumptions. Click any cell
+                            to override.</span
+                        >
+                    </div>
+                    <div class="table-wrap">
+                        <table class="editable-table" id="cost-table">
+                            <thead>
+                                <tr>
+                                    <th>Cost pool</th>
+                                    <th class="right">Pool % rev (low–high)</th>
+                                    <th class="right">
+                                        AI-addressable (low–high)
+                                    </th>
+                                    <th class="right">
+                                        Improvement (low–high)
+                                    </th>
+                                    <th class="right">Addressable base ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="calc-block">
+                    <div class="block-header">
+                        <h3 data-icon="award" data-icon-size="16">
+                            Initiatives &amp; annualized value
+                        </h3>
+                        <span class="block-sub"
+                            >Edit any low / high % to reshape the
+                            portfolio.</span
+                        >
+                    </div>
+                    <div class="table-wrap">
+                        <table
+                            class="editable-table initiative-table"
+                            id="initiative-table"
+                        >
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Initiative</th>
+                                    <th>Value-chain step</th>
+                                    <th>Cost / revenue pool</th>
+                                    <th>Mechanism</th>
+                                    <th class="right">Low %rev</th>
+                                    <th class="right">High %rev</th>
+                                    <th class="right">Low value</th>
+                                    <th class="right">High value</th>
+                                    <th>Effort</th>
+                                    <th>Time to pilot</th>
+                                    <th>Proof</th>
+                                    <th>Demo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="calc-block">
+                    <div class="block-header">
+                        <h3 data-icon="map" data-icon-size="16">
+                            Phased roadmap
+                        </h3>
+                        <span class="block-sub"
+                            >Initiatives auto-bucketed by time-to-pilot.</span
+                        >
+                    </div>
+                    <div class="roadmap-grid" id="roadmap-grid"></div>
+                </div>
+
+                <div class="calc-block formula-block">
+                    <div class="block-header">
+                        <h3 data-icon="sigma" data-icon-size="16">
+                            How the math works
+                        </h3>
+                        <span class="block-sub"
+                            >Open formula. Adjust overlap discount, adoption,
+                            confidence below.</span
+                        >
+                    </div>
+                    <div class="formula-row">
+                        <div class="formula-card">
+                            <div class="formula-eyebrow" data-icon="cpu">
+                                Per initiative
+                            </div>
+                            <div class="formula-eq">
+                                Annual&nbsp;Value&nbsp;=&nbsp;<span class="tk"
+                                    >Addressable&nbsp;Base</span
+                                >
+                                &nbsp;×&nbsp;<span class="tk">Improvement</span>
+                                &nbsp;×&nbsp;<span class="tk">Adoption</span>
+                                &nbsp;×&nbsp;<span class="tk">Confidence</span>
+                            </div>
+                            <ul class="formula-defs">
+                                <li>
+                                    <b>Addressable base</b> - cost or revenue
+                                    pool affected by the initiative.
+                                </li>
+                                <li>
+                                    <b>Improvement potential</b> - benchmark
+                                    improvement percentage.
+                                </li>
+                                <li>
+                                    <b>Adoption</b> - share of operation in
+                                    scope for the horizon.
+                                </li>
+                                <li>
+                                    <b>Confidence</b> - derived from data
+                                    maturity &amp; proof strength.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="formula-card">
+                            <div class="formula-eyebrow" data-icon="sliders">
+                                Levers
+                            </div>
+                            <label class="field">
+                                <span class="field-label" data-icon="trendUp"
+                                    >Adoption (low - high)</span
+                                >
+                                <div class="slider-row">
+                                    <input
+                                        id="adopt-low"
+                                        type="number"
+                                        step="0.05"
+                                        min="0"
+                                        max="1"
+                                        value="0.7"
+                                    />
+                                    <span class="thin">-</span>
+                                    <input
+                                        id="adopt-high"
+                                        type="number"
+                                        step="0.05"
+                                        min="0"
+                                        max="1"
+                                        value="1.0"
+                                    />
+                                </div>
+                            </label>
+                            <label class="field">
+                                <span class="field-label" data-icon="sliders"
+                                    >Overlap discount (low - high %)</span
+                                >
+                                <div class="slider-row">
+                                    <input
+                                        id="overlap-low"
+                                        type="number"
+                                        step="1"
+                                        min="0"
+                                        max="60"
+                                        value="15"
+                                    />
+                                    <span class="thin">-</span>
+                                    <input
+                                        id="overlap-high"
+                                        type="number"
+                                        step="1"
+                                        min="0"
+                                        max="60"
+                                        value="30"
+                                    />
+                                </div>
+                            </label>
+                            <div
+                                class="formula-result"
+                                id="formula-result"
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <span
+                >Estimates are assumption-driven. Validate with the client
+                before publishing.</span
+            >
+            <span id="footer-source"
+                >Source:
+                <code
+                    ><a
+                        href="supply_chain_demo_mapping.xlsx"
+                        style="text-decoration: none"
+                        target="_blank"
+                        >supply_chain_demo_mapping.xlsx</a
+                    ></code
+                ></span
+            >
+        </footer>
+
+        <div id="toast-host" aria-live="polite"></div>
+
+        <script src="/static/app.js" type="module"></script>
+    </body>
+</html>
