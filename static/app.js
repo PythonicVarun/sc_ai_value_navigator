@@ -1918,6 +1918,7 @@ function setupResizablePanes() {
         minW: 288,
         maxW: 540,
         storageKey: "pane.map.detail.v1",
+        defaultCollapsed: true,
     });
     setupPane({
         paneEl: document.querySelector("#tab-calc > div > .sidebar"),
@@ -1940,6 +1941,7 @@ function setupPane({
     minW,
     maxW,
     storageKey,
+    defaultCollapsed = false,
 }) {
     if (!paneEl || !scope) return;
 
@@ -1962,7 +1964,8 @@ function setupPane({
     let width = Number.isFinite(+saved.w)
         ? Math.max(minW, Math.min(maxW, +saved.w))
         : defaultW;
-    let collapsed = !!saved.collapsed;
+    let collapsed =
+        "collapsed" in saved ? !!saved.collapsed : !!defaultCollapsed;
 
     const collapsedW = 40;
 
@@ -2423,6 +2426,7 @@ function renderMap() {
                 if (state.selectedStep === step.label)
                     card.classList.add("selected");
                 card.addEventListener("click", () => selectStep(step.label));
+                attachStepTooltip(card, step.label);
                 col.append(card);
                 continue;
             }
@@ -2478,11 +2482,231 @@ function renderMap() {
                 ],
             );
             card.addEventListener("click", () => selectStep(step.label));
+            attachStepTooltip(card, step.label);
             col.append(card);
         }
 
         canvas.append(col);
     }
+}
+
+// =====================================================================
+// Step-card hover tooltip
+// Shows: Horizontal Tags · Client Question · all demo links (";" splits)
+// =====================================================================
+
+let _stepTooltipEl = null;
+let _stepTooltipHideTimer = null;
+let _stepTooltipBoundOnce = false;
+
+function _ensureStepTooltip() {
+    if (_stepTooltipEl) return _stepTooltipEl;
+    _stepTooltipEl =
+        document.getElementById("step-tooltip") ||
+        (() => {
+            const d = document.createElement("div");
+            d.id = "step-tooltip";
+            d.className = "step-tooltip";
+            d.setAttribute("role", "tooltip");
+            d.setAttribute("aria-hidden", "true");
+            document.body.appendChild(d);
+            return d;
+        })();
+
+    if (!_stepTooltipBoundOnce) {
+        _stepTooltipBoundOnce = true;
+        _stepTooltipEl.addEventListener("mouseenter", () => {
+            if (_stepTooltipHideTimer) {
+                clearTimeout(_stepTooltipHideTimer);
+                _stepTooltipHideTimer = null;
+            }
+        });
+        _stepTooltipEl.addEventListener("mouseleave", () => {
+            _hideStepTooltipSoon(0);
+        });
+        // Hide on scroll / resize so it never floats over the wrong card.
+        window.addEventListener(
+            "scroll",
+            () => _hideStepTooltipNow(),
+            true,
+        );
+        window.addEventListener("resize", () => _hideStepTooltipNow());
+    }
+    return _stepTooltipEl;
+}
+
+function _buildStepTooltipContent(stepLabel) {
+    const rows = rowsForStep(stepLabel);
+
+    // Horizontal Tags - de-duped, preserves first-seen order.
+    const tagSet = new Set();
+    rows.forEach((r) => {
+        (r["Horizontal Tags"] || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .forEach((t) => tagSet.add(t));
+    });
+
+    // Group by demo asset; each demo can have multiple URLs (semicolon-split).
+    const demosByName = new Map();
+    rows.forEach((r) => {
+        const name = (r["Demo or Case Asset"] || "Demo").trim();
+        const raw = (r["Demo Hyperlink"] || "").toString();
+        const urls = raw
+            .split(";")
+            .map((s) => s.trim())
+            .filter((u) => u && !isPlaceholderLink(u));
+        if (!urls.length) return;
+        if (!demosByName.has(name)) demosByName.set(name, new Set());
+        const bucket = demosByName.get(name);
+        urls.forEach((u) => bucket.add(u));
+    });
+
+    const wrap = el("div", { class: "step-tooltip-inner" });
+    wrap.append(el("div", { class: "tt-title", text: stepLabel }));
+
+    if (tagSet.size) {
+        wrap.append(
+            el("div", { class: "tt-section" }, [
+                el("div", {
+                    class: "tt-head",
+                    html:
+                        iconHTML("tag", 11) + `<span>Horizontal tags</span>`,
+                }),
+                el(
+                    "div",
+                    { class: "tt-tags" },
+                    [...tagSet].map((t) =>
+                        el("span", { class: "tt-chip", text: t }),
+                    ),
+                ),
+            ]),
+        );
+    }
+
+    const totalLinks = [...demosByName.values()].reduce(
+        (n, s) => n + s.size,
+        0,
+    );
+
+    const section = el("div", { class: "tt-section" }, [
+        el("div", {
+            class: "tt-head",
+            html:
+                iconHTML("eye", 11) +
+                `<span>Demo link${totalLinks === 1 ? "" : "s"}</span>`,
+        }),
+    ]);
+
+    if (!demosByName.size) {
+        section.append(
+            el("div", {
+                class: "tt-empty",
+                text: rows.length
+                    ? "No demo links available for this step yet."
+                    : "No assets linked in the workbook for this step.",
+            }),
+        );
+    } else {
+        const demoList = el("div", { class: "tt-demos" });
+        [...demosByName.entries()].forEach(([name, urlSet]) => {
+            const urls = [...urlSet];
+            const demoBlock = el("div", { class: "tt-demo" });
+            demoBlock.append(el("div", { class: "tt-demo-name", text: name }));
+            const links = el("div", { class: "tt-links" });
+            urls.forEach((url, i) => {
+                const label = urls.length > 1 ? `Link ${i + 1}` : "Open demo";
+                links.append(
+                    el("a", {
+                        class: "tt-link",
+                        href: url,
+                        target: "_blank",
+                        rel: "noreferrer",
+                        title: url,
+                        html:
+                            iconHTML("externalLink", 11) +
+                            `<span>${label}</span>`,
+                    }),
+                );
+            });
+            demoBlock.append(links);
+            demoList.append(demoBlock);
+        });
+        section.append(demoList);
+    }
+    wrap.append(section);
+
+    return wrap;
+}
+
+function _positionStepTooltip(tt, anchor) {
+    const margin = 10;
+    const pad = 12;
+    tt.style.left = "-9999px";
+    tt.style.top = "-9999px";
+    tt.style.maxWidth = "340px";
+    const r = anchor.getBoundingClientRect();
+    const ttRect = tt.getBoundingClientRect();
+    const ttW = ttRect.width;
+    const ttH = ttRect.height;
+
+    let left = r.right + margin;
+    let top = r.top;
+
+    if (left + ttW > window.innerWidth - pad) {
+        left = r.left - ttW - margin;
+    }
+    if (left < pad) {
+        left = Math.min(
+            window.innerWidth - ttW - pad,
+            Math.max(pad, r.left),
+        );
+        top = r.bottom + margin;
+    }
+    if (top + ttH > window.innerHeight - pad) {
+        top = Math.max(pad, window.innerHeight - ttH - pad);
+    }
+    tt.style.left = `${Math.round(left)}px`;
+    tt.style.top = `${Math.round(top)}px`;
+}
+
+function _showStepTooltip(card, stepLabel) {
+    if (_stepTooltipHideTimer) {
+        clearTimeout(_stepTooltipHideTimer);
+        _stepTooltipHideTimer = null;
+    }
+    const tt = _ensureStepTooltip();
+    const content = _buildStepTooltipContent(stepLabel);
+    if (!content) return;
+    tt.innerHTML = "";
+    tt.appendChild(content);
+    tt.classList.add("visible");
+    tt.setAttribute("aria-hidden", "false");
+    _positionStepTooltip(tt, card);
+}
+
+function _hideStepTooltipSoon(delay = 120) {
+    if (_stepTooltipHideTimer) clearTimeout(_stepTooltipHideTimer);
+    _stepTooltipHideTimer = setTimeout(_hideStepTooltipNow, delay);
+}
+
+function _hideStepTooltipNow() {
+    if (_stepTooltipHideTimer) {
+        clearTimeout(_stepTooltipHideTimer);
+        _stepTooltipHideTimer = null;
+    }
+    if (_stepTooltipEl) {
+        _stepTooltipEl.classList.remove("visible");
+        _stepTooltipEl.setAttribute("aria-hidden", "true");
+    }
+}
+
+function attachStepTooltip(card, stepLabel) {
+    card.addEventListener("mouseenter", () =>
+        _showStepTooltip(card, stepLabel),
+    );
+    card.addEventListener("mouseleave", () => _hideStepTooltipSoon());
 }
 
 function selectStep(label) {
