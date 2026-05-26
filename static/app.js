@@ -2460,21 +2460,21 @@ function renderMap() {
                         el("div", { class: "step-counts" }, [
                             demoCount
                                 ? el("span", {
-                                      class: "count-chip has-demo",
-                                      text: `${demoCount} demo${demoCount > 1 ? "s" : ""}`,
-                                  })
+                                    class: "count-chip has-demo",
+                                    text: `${demoCount} demo${demoCount > 1 ? "s" : ""}`,
+                                })
                                 : null,
                             caseCount
                                 ? el("span", {
-                                      class: "count-chip has-case",
-                                      text: `${caseCount} case${caseCount > 1 ? "s" : ""}`,
-                                  })
+                                    class: "count-chip has-case",
+                                    text: `${caseCount} case${caseCount > 1 ? "s" : ""}`,
+                                })
                                 : null,
                             !demoCount && !caseCount
                                 ? el("span", {
-                                      class: "count-chip",
-                                      text: "no assets",
-                                  })
+                                    class: "count-chip",
+                                    text: "no assets",
+                                })
                                 : null,
                         ]),
                         dots,
@@ -2709,27 +2709,48 @@ function attachStepTooltip(card, stepLabel) {
     card.addEventListener("mouseleave", () => _hideStepTooltipSoon());
 }
 
+function clearSelectedStep() {
+    state.selectedStep = null;
+    $$(".step-card").forEach((c) => c.classList.remove("selected"));
+    renderDetail();
+}
+
 function selectStep(label) {
+    const detailPane = $("#detail-pane");
     const wasAlreadySelected = state.selectedStep === label;
-    state.selectedStep = label;
+    const shouldCollapse = wasAlreadySelected && detailPane && !detailPane.classList.contains("pane-collapsed");
+
+    state.selectedStep = wasAlreadySelected ? null : label;
     $$(".step-card").forEach((c) =>
-        c.classList.toggle("selected", c.dataset.step === label),
+        c.classList.toggle("selected", c.dataset.step === state.selectedStep),
     );
     renderDetail();
 
-    const detailPane = $("#detail-pane");
     if (!detailPane) return;
 
     const toggleBtn = detailPane.querySelector(".pane-toggle");
     if (!toggleBtn) return;
 
-    if (wasAlreadySelected) {
+    if (shouldCollapse) {
         toggleBtn.click();
-    } else {
+    } else if (!wasAlreadySelected) {
         if (detailPane.classList.contains("pane-collapsed")) {
             toggleBtn.click();
         }
     }
+}
+
+function wireDetailPaneCollapseSync() {
+    const detailPane = $("#detail-pane");
+    const toggleBtn = detailPane?.querySelector(".pane-toggle");
+    if (!detailPane || !toggleBtn || toggleBtn.dataset.selectionSyncBound === "1") return;
+
+    toggleBtn.dataset.selectionSyncBound = "1";
+    toggleBtn.addEventListener("click", () => {
+        if (detailPane.classList.contains("pane-collapsed") && state.selectedStep) {
+            clearSelectedStep();
+        }
+    });
 }
 
 // =====================================================================
@@ -2801,8 +2822,8 @@ function renderDetail() {
                         tier === "high"
                             ? "target"
                             : tier === "med"
-                              ? "flag"
-                              : "info",
+                                ? "flag"
+                                : "info",
                         11,
                     ) + `<span>${tierMap[tier]}</span>`,
             }),
@@ -3064,7 +3085,7 @@ function renderOpportunityStrip() {
                 html:
                     iconHTML(
                         STAGE_ICON[
-                            STEPS.find((s) => s.label === init.vc_step)?.stage
+                        STEPS.find((s) => s.label === init.vc_step)?.stage
                         ] || "chevronRight",
                         11,
                     ) + `<span>${init.vc_step} · ${init.pool}</span>`,
@@ -3089,20 +3110,20 @@ function renderOpportunityStrip() {
             el("div", { class: "init-foot" }, [
                 placeholder
                     ? el("span", {
-                          class: "init-link is-placeholder",
-                          html:
-                              iconHTML("link", 11) +
-                              `<span>Link to be added</span>`,
-                      })
+                        class: "init-link is-placeholder",
+                        html:
+                            iconHTML("link", 11) +
+                            `<span>Link to be added</span>`,
+                    })
                     : el("a", {
-                          class: "init-link",
-                          href: link,
-                          target: "_blank",
-                          rel: "noreferrer",
-                          html:
-                              iconHTML("externalLink", 11) +
-                              `<span>Open proof</span>`,
-                      }),
+                        class: "init-link",
+                        href: link,
+                        target: "_blank",
+                        rel: "noreferrer",
+                        html:
+                            iconHTML("externalLink", 11) +
+                            `<span>Open proof</span>`,
+                    }),
                 el("span", { class: "init-tag", text: init.vc_step }),
             ]),
         ]);
@@ -3155,7 +3176,7 @@ function rankedInitiatives() {
             const speed = { S: 1, M: 0.7, L: 0.45 }[init.effort] || 0.5;
             const dataReady =
                 { Low: 0.4, Developing: 0.6, Medium: 0.8, High: 1.0 }[
-                    state.maturity
+                state.maturity
                 ] || 0.7;
             const proofStrength =
                 ({ demo: 0.7, case: 1.0, accelerator: 0.8, concept: 0.3 }[
@@ -3163,7 +3184,7 @@ function rankedInitiatives() {
                 ] || 0.5) * (hasProof ? 1.1 : 0.9);
             const cross =
                 init.tags?.includes("data") ||
-                init.vc_step === "Data Foundation"
+                    init.vc_step === "Data Foundation"
                     ? 1
                     : 0.6;
 
@@ -3385,7 +3406,7 @@ function computeInitiative(init) {
     // Proof adjustments
     const proofAdj =
         { demo: 0.03, case: 0.05, accelerator: 0.03, concept: -0.05 }[
-            init.proof
+        init.proof
         ] || 0;
 
     const cLow = Math.max(0.1, Math.min(1, confLow + proofAdj));
@@ -3496,20 +3517,20 @@ function renderInitiativeTable() {
             el("td", {}, [
                 placeholder
                     ? el("span", {
-                          class: "asset-link is-placeholder",
-                          html:
-                              iconHTML("link", 11) +
-                              `<span>Link to be added</span>`,
-                      })
+                        class: "asset-link is-placeholder",
+                        html:
+                            iconHTML("link", 11) +
+                            `<span>Link to be added</span>`,
+                    })
                     : el("a", {
-                          class: "asset-link",
-                          href: link,
-                          target: "_blank",
-                          rel: "noreferrer",
-                          html:
-                              iconHTML("externalLink", 11) +
-                              `<span>Open</span>`,
-                      }),
+                        class: "asset-link",
+                        href: link,
+                        target: "_blank",
+                        rel: "noreferrer",
+                        html:
+                            iconHTML("externalLink", 11) +
+                            `<span>Open</span>`,
+                    }),
             ]),
         );
 
@@ -4407,6 +4428,7 @@ async function boot() {
     wireEvents();
     decorateStaticIcons();
     setupResizablePanes();
+    wireDetailPaneCollapseSync();
     setupThemeToggle();
     renderEverything();
 
