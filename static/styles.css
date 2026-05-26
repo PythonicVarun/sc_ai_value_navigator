@@ -577,10 +577,12 @@ textarea {
 
 #tab-map {
     grid-template-columns: var(--sidebar-w, 304px) 1fr var(--detail-w, 360px);
+    transition: grid-template-columns 0.3s ease-out;
 }
 
 #tab-calc {
     grid-template-columns: var(--sidebar-w, 320px) 1fr;
+    transition: grid-template-columns 0.3s ease-out;
 }
 
 /* ===== Resizable / collapsible panes ===== */

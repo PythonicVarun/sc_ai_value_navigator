@@ -2710,11 +2710,26 @@ function attachStepTooltip(card, stepLabel) {
 }
 
 function selectStep(label) {
+    const wasAlreadySelected = state.selectedStep === label;
     state.selectedStep = label;
     $$(".step-card").forEach((c) =>
         c.classList.toggle("selected", c.dataset.step === label),
     );
     renderDetail();
+
+    const detailPane = $("#detail-pane");
+    if (!detailPane) return;
+
+    const toggleBtn = detailPane.querySelector(".pane-toggle");
+    if (!toggleBtn) return;
+
+    if (wasAlreadySelected) {
+        toggleBtn.click();
+    } else {
+        if (detailPane.classList.contains("pane-collapsed")) {
+            toggleBtn.click();
+        }
+    }
 }
 
 // =====================================================================
