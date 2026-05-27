@@ -48,6 +48,22 @@ const STEPS = [
     { n: 17, label: "Data Foundation", stage: "Enable" },
 ];
 
+const VISUAL_NODES = [
+    { n: 1, label: "Demand Signals", steps: ["Demand Sensing", "Demand & Supply Plan"], icon: "activity", challenge: "planning" },
+    { n: 2, label: "Supplier & Materials", steps: ["Supplier Readiness"], icon: "briefcase", challenge: "data" },
+    { n: 3, label: "Inbound Logistics", steps: ["Inbound Receipt & Quality"], icon: "truck", challenge: "exec" },
+    { n: 4, label: "Production Plan", steps: ["Production Plan"], icon: "calendar", challenge: "planning" },
+    { n: 5, label: "Line Execution & Quality", steps: ["Line Execution"], icon: "tool", challenge: "exec" },
+    { n: 6, label: "Warehouse Operations", steps: ["Warehouse Receipt", "Allocate & Pick"], icon: "warehouse", challenge: "exec" },
+    { n: 7, label: "Inventory Visibility", steps: ["Inventory Visibility", "Inventory & Safety Stock"], icon: "eye", challenge: "data" },
+    { n: 8, label: "Load & Dispatch", steps: ["Load & Dispatch"], icon: "package", challenge: "exec" },
+    { n: 9, label: "Transport Execution", steps: ["Route & Delivery Execution"], icon: "map", challenge: "exec" },
+    { n: 10, label: "Customer Handoff", steps: ["Customer Order & Promise"], icon: "user", challenge: "comm" },
+    { n: 11, label: "Returns & Claims", steps: ["Customer Service & Claims"], icon: "refresh", challenge: "comp" },
+    { n: 12, label: "Command Center", steps: ["Revenue / Network Optimization", "Pricing & Trade"], icon: "cpu", challenge: "comm" },
+    { n: 13, label: "Data Foundation", steps: ["Data Foundation"], icon: "database", challenge: "foundation" }
+];
+
 const ARCHETYPES = [
     {
         id: "3PL / logistics provider",
@@ -309,12 +325,12 @@ const STEP_CHALLENGES = {
 };
 
 const CHALLENGE_LABELS = {
-    data: { label: "Data / Visibility Gaps", cls: "dot-data" },
-    planning: { label: "Planning Disconnects", cls: "dot-planning" },
-    exec: { label: "Execution Coordination", cls: "dot-exec" },
-    comm: { label: "Commercial Decision Support", cls: "dot-comm" },
-    comp: { label: "Compliance / Leakage", cls: "dot-comp" },
-    foundation: { label: "Data Foundation", cls: "dot-foundation" },
+    data: { label: "Data / Visibility Gaps", cls: "cat-data" },
+    planning: { label: "Planning Disconnects", cls: "cat-planning" },
+    exec: { label: "Execution Coordination", cls: "cat-exec" },
+    comm: { label: "Commercial Decision Support", cls: "cat-comm" },
+    comp: { label: "Compliance / Leakage", cls: "cat-comp" },
+    foundation: { label: "Data Foundation", cls: "cat-foundation" },
 };
 
 const BUYER_STEP_BOOSTS = {
@@ -1825,6 +1841,7 @@ const ICONS = {
         '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>',
     moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+    x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
 };
 
 function iconHTML(name, size = 14, cls = "") {
@@ -1908,6 +1925,7 @@ function setupResizablePanes() {
         minW: 232,
         maxW: 480,
         storageKey: "pane.map.sidebar.v1",
+        defaultCollapsed: true,
     });
     setupPane({
         paneEl: document.querySelector("#tab-map > div > .detail-pane"),
@@ -1979,7 +1997,7 @@ function setupPane({
     // Header bar (sticky, lives at top of the pane). The toggle button lives inside it,
     // so it's never clipped by the pane's overflow:auto and never overlaps form controls.
     const header = document.createElement("div");
-    header.className = `pane-header pane-header-${side}`;
+    header.className = `pane-header pane-header-${side} ${side === "left" ? "hidden" : ""}`;
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -2279,13 +2297,14 @@ function updateBuyerHelper() {
 
 function renderChallengeLegend() {
     const host = $("#challenge-legend");
+    if (!host) return;
     host.innerHTML = "";
     for (const [k, v] of Object.entries(CHALLENGE_LABELS)) {
-        const span = el("span", { class: "legend-item" }, [
+        const li = el("li", {}, [
             el("span", { class: `legend-dot ${v.cls}` }),
-            el("span", { text: v.label }),
+            document.createTextNode(v.label)
         ]);
-        host.append(span);
+        host.append(li);
     }
 }
 
@@ -2369,124 +2388,571 @@ function renderInferenceCard() {
     }
 }
 
+function getStepIllustration(stepLabel) {
+    const map = {
+        "Demand Sensing": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Storefront base building -->
+                <path d="M 40,55 L 60,65 V 45 L 40,35 Z" fill="#475569"/>
+                <path d="M 60,65 L 80,55 V 35 L 60,45 Z" fill="#64748b"/>
+                <!-- Awning / Canopy -->
+                <path d="M 38,39 L 60,50 L 60,45 L 38,34 Z" fill="#f97316"/>
+                <path d="M 60,50 L 82,39 L 82,34 L 60,45 Z" fill="#ffffff"/>
+                <path d="M 44,42 L 60,50 L 60,45 L 44,37 Z" fill="#ffffff"/>
+                <path d="M 60,50 L 76,42 L 76,37 L 60,45 Z" fill="#f97316"/>
+                <!-- Doorway -->
+                <path d="M 46,58 V 49 L 52,52 V 61 Z" fill="#0f172a"/>
+                <!-- Floating wireless/radar sensing waves -->
+                <path d="M 52,24 A 8 8 0 0 1 68,24" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" fill="none" class="radar-ring-1"/>
+                <path d="M 46,18 A 14 14 0 0 1 74,18" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 3" fill="none" class="radar-ring-2"/>
+                <path d="M 40,12 A 20 20 0 0 1 80,12" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" fill="none" class="radar-ring-3"/>
+            </svg>
+        `,
+        "Demand & Supply Plan": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Clipboard backing -->
+                <path d="M 45,28 L 75,43 L 65,70 L 35,55 Z" fill="#78350f"/>
+                <!-- Paper -->
+                <path d="M 48,32 L 72,44 L 64,66 L 40,54 Z" fill="#ffffff"/>
+                <!-- Metallic Clip -->
+                <path d="M 56,26 L 64,30 L 61,35 L 53,31 Z" fill="#94a3b8"/>
+                <!-- Trend line projecting out in 3D -->
+                <path d="M 35,62 L 50,47 L 65,52 L 85,32" stroke="#f97316" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="trend-line"/>
+                <circle cx="85" cy="32" r="4.5" fill="#f97316" class="signal-pulse-1"/>
+            </svg>
+        `,
+        "Inventory & Safety Stock": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Stacked inventory boxes -->
+                <!-- Box 1 (Left) -->
+                <path d="M 35,52 L 48,45.5 L 61,52 L 48,58.5 Z" fill="#fed7aa"/>
+                <path d="M 35,52 L 48,58.5 V 68.5 L 35,62 Z" fill="#f97316"/>
+                <path d="M 48,58.5 L 61,52 V 62 L 48,68.5 Z" fill="#ea580c"/>
+                <!-- Box 2 (Right) -->
+                <path d="M 55,57 L 68,50.5 L 81,57 L 68,63.5 Z" fill="#fed7aa"/>
+                <path d="M 55,57 L 68,63.5 V 73.5 L 55,67 Z" fill="#f97316"/>
+                <path d="M 68,63.5 L 81,57 V 67 L 68,73.5 Z" fill="#ea580c"/>
+                <!-- Protecting Shield overlay -->
+                <path d="M 60,18 C 70,22 78,22 82,25 C 82,38 74,48 60,55 C 46,48 38,38 38,25 C 42,22 50,22 60,18 Z" fill="rgba(59, 130, 246, 0.15)" stroke="#3b82f6" stroke-width="2.5" stroke-linejoin="round" class="shield-float"/>
+                <path d="M 52,36 L 57,41 L 68,30" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="shield-float"/>
+            </svg>
+        `,
+        "Supplier Readiness": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Factory base/building -->
+                <path d="M 35,55 L 60,67.5 V 47.5 L 35,35 Z" fill="#1e3a8a"/>
+                <path d="M 60,67.5 L 85,55 V 35 L 60,47.5 Z" fill="#3b82f6"/>
+                <!-- Sawtooth roofs -->
+                <path d="M 35,35 L 47.5,22.5 L 47.5,30 Z" fill="#1e3a8a"/>
+                <path d="M 47.5,22.5 L 72.5,10 L 72.5,17.5 L 47.5,30 Z" fill="#93c5fd"/>
+                <path d="M 47.5,30 L 60,17.5 L 60,25 Z" fill="#1e3a8a"/>
+                <path d="M 60,17.5 L 85,5 L 85,12.5 L 60,25 Z" fill="#93c5fd"/>
+                <!-- Windows/details -->
+                <path d="M 65,42.5 L 72,39 V 45 L 65,48.5 Z" fill="#ffffff" opacity="0.7"/>
+                <path d="M 74,38 L 81,34.5 V 40.5 L 74,44 Z" fill="#ffffff" opacity="0.7"/>
+            </svg>
+        `,
+        "Inbound Receipt & Quality": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Large 3D Container Box -->
+                <path d="M 40,48 L 60,38 L 80,48 L 60,58 Z" fill="#ffedd5"/>
+                <path d="M 40,48 L 60,58 V 70 L 40,60 Z" fill="#f97316"/>
+                <path d="M 60,58 L 80,48 V 60 L 60,70 Z" fill="#ea580c"/>
+                <!-- Flaps open -->
+                <path d="M 40,48 L 30,40 L 50,30 L 60,38 Z" fill="#fed7aa" opacity="0.9"/>
+                <path d="M 80,48 L 90,40 L 70,30 L 60,38 Z" fill="#fed7aa" opacity="0.9"/>
+                <!-- Quality Check circle/badge -->
+                <circle cx="82" cy="30" r="12" fill="#ffffff" stroke="#10b981" stroke-width="2.5" class="signal-pulse-2"/>
+                <path d="M 77,30 L 80,33 L 87,26" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `,
+        "Production Plan": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Factory building -->
+                <path d="M 32,54 L 52,64 V 48 L 32,38 Z" fill="#475569"/>
+                <path d="M 52,64 L 72,54 V 38 L 52,48 Z" fill="#64748b"/>
+                <path d="M 32,38 L 52,28 L 72,38 L 52,48 Z" fill="#94a3b8"/>
+                <!-- Standalone 3D rotating gear -->
+                <circle cx="80" cy="35" r="14" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="4 4" class="gear"/>
+                <circle cx="80" cy="35" r="5" fill="#3b82f6"/>
+                <!-- Wires connecting them -->
+                <path d="M 52,48 C 65,48 70,35 80,35" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3 3"/>
+            </svg>
+        `,
+        "Line Execution": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Conveyor Belt -->
+                <path d="M 25,60 L 85,30 L 95,35 L 35,65 Z" fill="#334155"/>
+                <path d="M 25,60 L 35,65 V 68 L 25,63 Z" fill="#1e293b"/>
+                <!-- Items on Belt -->
+                <path d="M 40,51 L 46,48 L 52,51 L 46,54 Z" fill="#ffd7aa"/>
+                <path d="M 40,51 L 46,54 V 58 L 40,55 Z" fill="#f97316"/>
+                <path d="M 46,54 L 52,51 V 55 L 46,58 Z" fill="#ea580c"/>
+                <!-- Robotic arm assembly -->
+                <path d="M 72,40 V 22 L 56,18 L 48,32" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="robot-arm"/>
+                <circle cx="72" cy="40" r="3.5" fill="#334155"/>
+                <circle cx="56" cy="18" r="3" fill="#334155"/>
+                <!-- Laser scanner glow -->
+                <polygon points="48,32 40,50 52,48" fill="rgba(239, 68, 68, 0.25)" class="laser-glow"/>
+                <circle cx="48" cy="32" r="2" fill="#ef4444"/>
+            </svg>
+        `,
+        "Warehouse Receipt": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Warehouse structure -->
+                <path d="M 32,54 L 57,66.5 V 46.5 L 32,34 Z" fill="#cbd5e1"/>
+                <path d="M 57,66.5 L 82,54 V 34 L 57,46.5 Z" fill="#94a3b8"/>
+                <!-- Blue roof slopes -->
+                <path d="M 32,34 L 57,21.5 L 82,9 L 57,21.5 Z" fill="#1e3a8a" opacity="0.2"/>
+                <path d="M 32,34 L 57,21.5 L 82,14 L 57,26.5 Z" fill="#1e3a8a" opacity="0.3"/>
+                <path d="M 32,34 L 57,21.5 L 82,9 Z" fill="#1e3a8a" opacity="0.2"/>
+                <!-- Corrected roof geometry -->
+                <path d="M 32,34 L 57,21.5 L 82,9 Z" fill="none"/>
+                <!-- Solid roof faces -->
+                <path d="M 32,34 L 57,21.5 L 82,34 L 57,46.5 Z" fill="#1e3a8a"/>
+                <path d="M 57,21.5 L 82,9 L 107,21.5 L 82,34 Z" fill="#3b82f6"/>
+                <!-- Loading bay door -->
+                <path d="M 40,50 L 50,55 V 66.5 L 40,61.5 Z" fill="#1e293b"/>
+            </svg>
+        `,
+        "Inventory Visibility": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Stacked pallets/boxes -->
+                <path d="M 35,50 L 45,45 L 55,50 L 45,55 Z" fill="#ffd7aa"/>
+                <path d="M 35,50 L 45,55 V 63 L 35,58 Z" fill="#f97316"/>
+                <path d="M 45,55 L 55,50 V 58 L 45,63 Z" fill="#ea580c"/>
+                <!-- Tablet / Screen overlay showing inventory count -->
+                <path d="M 55,25 L 85,40 L 75,60 L 45,45 Z" fill="#1e293b" class="shield-float"/>
+                <path d="M 58,28 L 82,40 L 73,57 L 49,45 Z" fill="#0f172a" class="shield-float"/>
+                <!-- Chart on screen -->
+                <path d="M 52,41 L 62,36 L 70,42 L 78,35" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shield-float"/>
+            </svg>
+        `,
+        "Allocate & Pick": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Warehouse racks -->
+                <path d="M 35,32 H 40 V 62 H 35 Z" fill="#64748b"/>
+                <path d="M 65,47 H 70 V 77 H 65 Z" fill="#64748b"/>
+                <!-- Shelves -->
+                <path d="M 35,42 L 65,57 L 70,54.5 L 40,39.5 Z" fill="#94a3b8"/>
+                <path d="M 35,52 L 65,67 L 70,64.5 L 40,49.5 Z" fill="#94a3b8"/>
+                <!-- Boxes on shelves -->
+                <path d="M 42,38 L 48,41 V 46 L 42,43 Z" fill="#f97316"/>
+                <path d="M 52,43 L 58,46 V 51 L 52,48 Z" fill="#f97316"/>
+                <path d="M 45,48 L 51,51 V 56 L 45,53 Z" fill="#3b82f6"/>
+            </svg>
+        `,
+        "Load & Dispatch": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Loading bay wall -->
+                <path d="M 25,25 L 55,40 V 68 L 25,53 Z" fill="#475569"/>
+                <path d="M 32,36 L 48,44 V 68 L 32,60 Z" fill="#0f172a"/>
+                <!-- Rear of trailer loading in -->
+                <path d="M 48,44 L 58,39 V 59 L 48,64 Z" fill="#cbd5e1"/>
+                <path d="M 58,39 L 85,25.5 V 45.5 L 58,59 Z" fill="#94a3b8"/>
+                <!-- Red brake lights -->
+                <circle cx="50" cy="61" r="1.5" fill="#ef4444"/>
+                <circle cx="56" cy="58" r="1.5" fill="#ef4444"/>
+            </svg>
+        `,
+        "Route & Delivery Execution": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Winding road segment -->
+                <path d="M 20,62 Q 50,47 80,62 L 85,57 Q 50,42 15,57 Z" fill="#475569"/>
+                <!-- Truck driving on it -->
+                <!-- Cab -->
+                <path d="M 56,43 L 64,39 L 70,42 L 62,46 Z" fill="#93c5fd"/>
+                <path d="M 56,43 L 62,46 V 53 L 56,50 Z" fill="#1e3a8a"/>
+                <path d="M 62,46 L 70,42 V 49 L 62,53 Z" fill="#3b82f6"/>
+                <!-- Trailer -->
+                <path d="M 34,36 L 46,30 L 58,36 L 46,42 Z" fill="#ffffff"/>
+                <path d="M 34,36 L 46,42 V 49 L 34,43 Z" fill="#cbd5e1"/>
+                <path d="M 46,42 L 58,36 V 43 L 46,49 Z" fill="#94a3b8"/>
+            </svg>
+        `,
+        "Customer Order & Promise": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Storefront -->
+                <path d="M 35,53 L 55,63 V 44 L 35,34 Z" fill="#e2e8f0"/>
+                <path d="M 55,63 L 75,53 V 34 L 55,44 Z" fill="#cbd5e1"/>
+                <path d="M 35,34 L 55,24 L 75,34 L 55,44 Z" fill="#94a3b8"/>
+                <!-- Green Striped Awning -->
+                <path d="M 33,39 L 55,50 L 55,45 L 33,34 Z" fill="#10b981"/>
+                <path d="M 55,50 L 77,39 L 77,34 L 55,45 Z" fill="#ffffff"/>
+                <!-- Shopping cart floating overlay -->
+                <path d="M 62,28 H 72 L 78,46 H 65 Z" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shield-float"/>
+                <circle cx="67" cy="50" r="2.5" fill="#f97316" class="shield-float"/>
+                <circle cx="76" cy="50" r="2.5" fill="#f97316" class="shield-float"/>
+            </svg>
+        `,
+        "Customer Service & Claims": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Speech/chat bubbles floating -->
+                <path d="M 35,25 H 65 V 45 H 50 L 42,52 V 45 H 35 Z" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" class="shield-float"/>
+                <path d="M 50,38 H 80 V 58 H 65 L 57,65 V 58 H 50 Z" fill="#1e3a8a" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" class="shield-float-delayed"/>
+                <!-- Checkmark on front bubble -->
+                <path d="M 60,46 L 64,50 L 72,42" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shield-float-delayed"/>
+            </svg>
+        `,
+        "Pricing & Trade": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Slanted golden price tag -->
+                <path d="M 40,22 L 75,22 L 92,39 L 75,56 L 40,56 Z" fill="#fbbf24" class="shield-float"/>
+                <circle cx="50" cy="39" r="4.5" fill="#ffffff" class="shield-float"/>
+                <text x="62" y="47" font-family="var(--font-heading)" font-size="24" font-weight="900" fill="#78350f" class="shield-float">$</text>
+            </svg>
+        `,
+        "Revenue / Network Optimization": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Isometric platform floor -->
+                <path d="M 30,60 L 60,75 L 90,60 L 60,45 Z" fill="#cbd5e1" opacity="0.4"/>
+                <!-- Connected network nodes in 3D -->
+                <!-- Central Hub -->
+                <circle cx="60" cy="35" r="8" fill="#ea580c" stroke="#ffffff" stroke-width="2" class="network-node"/>
+                <!-- Outer Hubs -->
+                <circle cx="35" cy="45" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" class="network-node"/>
+                <circle cx="85" cy="45" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" class="network-node"/>
+                <circle cx="60" cy="18" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" class="network-node"/>
+                <!-- Connector lines -->
+                <line x1="35" y1="45" x2="60" y2="35" stroke="#3b82f6" stroke-width="2"/>
+                <line x1="85" y1="45" x2="60" y2="35" stroke="#3b82f6" stroke-width="2"/>
+                <line x1="60" y1="18" x2="60" y2="35" stroke="#3b82f6" stroke-width="2"/>
+                <path d="M 35,45 Q 60,60 85,45" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="2 2" fill="none"/>
+            </svg>
+        `,
+        "Data Foundation": `
+            <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+                <!-- Stacked database cylinders (isometric 3D) -->
+                <!-- Cylinder 3 (Bottom) -->
+                <ellipse cx="60" cy="55" rx="25" ry="7.5" fill="#60a5fa" stroke="#3b82f6" stroke-width="1.5"/>
+                <path d="M 35,55 V 65 C 35,72 85,72 85,65 V 55 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5"/>
+                <ellipse cx="60" cy="55" rx="25" ry="7.5" fill="#3b82f6"/>
+                <!-- Cylinder 2 (Middle) -->
+                <ellipse cx="60" cy="42" rx="25" ry="7.5" fill="#60a5fa" stroke="#3b82f6" stroke-width="1.5"/>
+                <path d="M 35,42 V 52 C 35,49 85,49 85,52 V 42 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5"/>
+                <ellipse cx="60" cy="42" rx="25" ry="7.5" fill="#3b82f6"/>
+                <!-- Cylinder 1 (Top) -->
+                <ellipse cx="60" cy="29" rx="25" ry="7.5" fill="#60a5fa" stroke="#3b82f6" stroke-width="1.5"/>
+                <path d="M 35,29 V 39 C 35,36 85,36 85,39 V 29 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5"/>
+                <ellipse cx="60" cy="29" rx="25" ry="7.5" fill="#60a5fa"/>
+                <!-- Side guidelines -->
+                <line x1="35" y1="29" x2="35" y2="65" stroke="#93c5fd" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="85" y1="29" x2="85" y2="65" stroke="#93c5fd" stroke-width="1" stroke-dasharray="2 2"/>
+            </svg>
+        `
+    };
+    return map[stepLabel] || `
+        <svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="step-svg">
+            <circle cx="60" cy="45" r="15" stroke="var(--border-strong)" stroke-width="2"/>
+            <line x1="60" y1="30" x2="60" y2="60" stroke="var(--border-strong)" stroke-width="2"/>
+            <line x1="45" y1="45" x2="75" y2="45" stroke="var(--border-strong)" stroke-width="2"/>
+        </svg>
+    `;
+}
+
 // =====================================================================
 // RENDER: Value-chain map
-// =====================================================================
+// =================================================
+// Visual Node Helpers & Winding Layout Rendering
+// =================================================
+
+function rowsForVisualNode(node) {
+    let allRows = [];
+    for (const step of node.steps) {
+        allRows.push(...rowsForStep(step));
+    }
+    return [...new Set(allRows)];
+}
+
+function _buildNodeTooltipContent(node) {
+    const rows = rowsForVisualNode(node);
+
+    // Horizontal Tags - de-duped
+    const tagSet = new Set();
+    rows.forEach((r) => {
+        (r["Horizontal Tags"] || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .forEach((t) => tagSet.add(t));
+    });
+
+    // Group by demo asset
+    const demosByName = new Map();
+    rows.forEach((r) => {
+        const name = (r["Demo or Case Asset"] || "Demo").trim();
+        const raw = (r["Demo Hyperlink"] || "").toString();
+        const urls = raw
+            .split(";")
+            .map((s) => s.trim())
+            .filter((u) => u && !isPlaceholderLink(u));
+        if (!urls.length) return;
+        if (!demosByName.has(name)) demosByName.set(name, new Set());
+        const bucket = demosByName.get(name);
+        urls.forEach((u) => bucket.add(u));
+    });
+
+    const wrap = el("div", { class: "step-tooltip-inner" });
+    wrap.append(el("div", { class: "tt-title", text: node.label }));
+
+    if (tagSet.size) {
+        wrap.append(
+            el("div", { class: "tt-section" }, [
+                el("div", {
+                    class: "tt-head",
+                    html: iconHTML("tag", 11) + `<span>Horizontal tags</span>`,
+                }),
+                el(
+                    "div",
+                    { class: "tt-tags" },
+                    [...tagSet].map((t) =>
+                        el("span", { class: "tt-chip", text: t }),
+                    ),
+                ),
+            ]),
+        );
+    }
+
+    const totalLinks = [...demosByName.values()].reduce(
+        (n, s) => n + s.size,
+        0,
+    );
+
+    const section = el("div", { class: "tt-section" }, [
+        el("div", {
+            class: "tt-head",
+            html: iconHTML("eye", 11) + `<span>Demo link${totalLinks === 1 ? "" : "s"}</span>`,
+        }),
+    ]);
+
+    if (!demosByName.size) {
+        section.append(
+            el("div", {
+                class: "tt-empty",
+                text: rows.length
+                    ? "No demo links available for this step yet."
+                    : "No assets linked in the workbook for this step.",
+            }),
+        );
+    } else {
+        const demoList = el("div", { class: "tt-demos" });
+        [...demosByName.entries()].forEach(([name, urlSet]) => {
+            const urls = [...urlSet];
+            const demoBlock = el("div", { class: "tt-demo" });
+            demoBlock.append(el("div", { class: "tt-demo-name", text: name }));
+            const links = el("div", { class: "tt-links" });
+            urls.forEach((url, i) => {
+                const label = urls.length > 1 ? `Link ${i + 1}` : "Open demo";
+                links.append(
+                    el("a", {
+                        class: "tt-link",
+                        href: url,
+                        target: "_blank",
+                        rel: "noreferrer",
+                        title: url,
+                        html: iconHTML("externalLink", 11) + `<span>${label}</span>`,
+                    }),
+                );
+            });
+            demoBlock.append(links);
+            demoList.append(demoBlock);
+        });
+        section.append(demoList);
+    }
+    wrap.append(section);
+
+    return wrap;
+}
+
+function _showNodeTooltip(card, node) {
+    if (_stepTooltipHideTimer) {
+        clearTimeout(_stepTooltipHideTimer);
+        _stepTooltipHideTimer = null;
+    }
+    const tt = _ensureStepTooltip();
+    const content = _buildNodeTooltipContent(node);
+    if (!content) return;
+    tt.innerHTML = "";
+    tt.appendChild(content);
+    tt.classList.add("visible");
+    tt.setAttribute("aria-hidden", "false");
+    _positionStepTooltip(tt, card);
+}
+
+function attachNodeTooltip(card, node) {
+    card.addEventListener("mouseenter", () => _showNodeTooltip(card, node));
+    card.addEventListener("mouseleave", () => _hideStepTooltipSoon());
+}
 
 function renderMap() {
     const canvas = $("#map-canvas");
     canvas.innerHTML = "";
 
-    for (const stage of STAGES) {
-        const stageSteps = STEPS.filter((s) => s.stage === stage.id);
-        const col = el("div", { class: "stage-col" });
-        const head = el("div", { class: "stage-head" }, [
-            el("span", {
-                class: "stage-head-label",
-                html:
-                    iconHTML(STAGE_ICON[stage.id] || "grid", 13) +
-                    `<span>${stage.label}</span>`,
-            }),
-            el("span", {
-                class: "stage-count",
-                text: String(stageSteps.length),
-            }),
-        ]);
-        col.append(head);
+    // Append absolute-positioned winding path connector SVG at the back
+    const pathSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    pathSvg.setAttribute("viewBox", "0 0 1000 400");
+    pathSvg.setAttribute("preserveAspectRatio", "none");
+    pathSvg.setAttribute("class", "map-path-overlay");
+    pathSvg.style.position = "absolute";
+    pathSvg.style.top = "0";
+    pathSvg.style.left = "0";
+    pathSvg.style.width = "100%";
+    pathSvg.style.height = "100%";
+    pathSvg.style.pointerEvents = "none";
+    pathSvg.style.zIndex = "0";
 
-        for (const step of stageSteps) {
-            const score = relevanceScore(step.label);
-            const tier = relevanceTier(score);
-            const rows = rowsForStep(step.label);
-            const demoCount = rows.filter((r) =>
-                /demo|accelerator/i.test(r["Asset Type"] || ""),
-            ).length;
-            const caseCount = rows.filter((r) =>
-                /case/i.test(r["Asset Type"] || ""),
-            ).length;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    // Connect coordinates:
+    // Row 1 centers (1 to 7): spaced evenly across 1000px: 71, 214, 357, 500, 643, 786, 928 (at y=100)
+    // Row 2 centers (8 to 12) align vertically: 71, 214, 357, (blank under col 4), 643, 786 (at y=280)
+    path.setAttribute("d", "M 71,100 L 928,100 C 990,100 990,190 500,190 C 10,190 10,280 71,280 L 786,280");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "var(--border-strong)");
+    path.setAttribute("stroke-width", "3");
+    path.setAttribute("stroke-dasharray", "6 6");
+    pathSvg.appendChild(path);
 
-            // If "show relevant only", hide low; or collapse
-            if (state.showRelevantOnly && tier === "low") {
-                const card = el(
-                    "div",
-                    {
-                        class: `step-card r-low collapsed`,
-                        "data-step": step.label,
-                    },
-                    [
-                        el("div", { class: "step-row1" }, [
-                            el("span", {
-                                class: "step-num",
-                                text: String(step.n),
-                            }),
-                        ]),
-                        el("div", { class: "step-label", text: step.label }),
-                    ],
-                );
-                if (state.selectedStep === step.label)
-                    card.classList.add("selected");
-                card.addEventListener("click", () => selectStep(step.label));
-                attachStepTooltip(card, step.label);
-                col.append(card);
-                continue;
+    // Draw the theme-aware flow block chevrons along the path
+    const drawChevron = (x, y, isLong = false) => {
+        const arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const w = isLong ? 40 : 16;
+        const d = `M ${x - w/2},${y - 6} L ${x + w/2 - 4},${y - 6} L ${x + w/2 - 4},${y - 12} L ${x + w/2 + 6},${y} L ${x + w/2 - 4},${y + 12} L ${x + w/2 - 4},${y + 6} L ${x - w/2},${y + 6} Z`;
+        arrow.setAttribute("d", d);
+        arrow.setAttribute("fill", "var(--surface)");
+        arrow.setAttribute("stroke", "var(--border-strong)");
+        arrow.setAttribute("stroke-width", "1.5");
+        pathSvg.appendChild(arrow);
+    };
+
+    // Row 1 chevrons
+    drawChevron(142.5, 100);
+    drawChevron(285.5, 100);
+    drawChevron(428.5, 100);
+    drawChevron(571.5, 100);
+    drawChevron(714.5, 100);
+    drawChevron(857.0, 100);
+
+    // Row 2 chevrons
+    drawChevron(142.5, 280);
+    drawChevron(285.5, 280);
+    drawChevron(500.0, 280, true); // spans gap under col 4
+    drawChevron(714.5, 280);
+
+    canvas.appendChild(pathSvg);
+
+    for (const node of VISUAL_NODES) {
+        // Calculate max relevance score among its steps
+        let maxScore = 0.3;
+        let hasRelevantStep = false;
+        for (const stepName of node.steps) {
+            const score = relevanceScore(stepName);
+            if (score > maxScore) maxScore = score;
+            if (relevanceTier(score) !== "low") {
+                hasRelevantStep = true;
             }
-
-            // dots
-            const dotKeys = STEP_CHALLENGES[step.label] || [];
-            const dots = el(
-                "div",
-                { class: "step-dots" },
-                dotKeys.map((k) => {
-                    return el("span", {
-                        class: `cat-dot ${CHALLENGE_LABELS[k]?.cls || ""}`,
-                        title: CHALLENGE_LABELS[k]?.label || k,
-                    });
-                }),
-            );
-
-            const card = el(
-                "div",
-                {
-                    class: `step-card r-${tier}${state.selectedStep === step.label ? " selected" : ""}`,
-                    "data-step": step.label,
-                },
-                [
-                    el("div", { class: "step-row1" }, [
-                        el("span", { class: "step-num", text: String(step.n) }),
-                        el("span", { class: "relevance-pill", text: tier }),
-                    ]),
-                    el("div", { class: "step-label", text: step.label }),
-                    el("div", { class: "step-meta" }, [
-                        el("div", { class: "step-counts" }, [
-                            demoCount
-                                ? el("span", {
-                                    class: "count-chip has-demo",
-                                    text: `${demoCount} demo${demoCount > 1 ? "s" : ""}`,
-                                })
-                                : null,
-                            caseCount
-                                ? el("span", {
-                                    class: "count-chip has-case",
-                                    text: `${caseCount} case${caseCount > 1 ? "s" : ""}`,
-                                })
-                                : null,
-                            !demoCount && !caseCount
-                                ? el("span", {
-                                    class: "count-chip",
-                                    text: "no assets",
-                                })
-                                : null,
-                        ]),
-                        dots,
-                    ]),
-                ],
-            );
-            card.addEventListener("click", () => selectStep(step.label));
-            attachStepTooltip(card, step.label);
-            col.append(card);
         }
 
-        canvas.append(col);
+        const tier = relevanceTier(maxScore);
+        const stars = (1.0 + maxScore * 4.0).toFixed(1);
+        const isSelected = node.steps.includes(state.selectedStep);
+        const isFaded = state.showRelevantOnly && !hasRelevantStep;
+
+        if (node.n === 13) {
+            // Data Foundation card (spans all columns)
+            const nodeCard = el("div", {
+                class: `step-card node-container node-13 r-${tier}${isSelected ? " selected" : ""}${isFaded ? " faded" : ""}`,
+                "data-step": node.steps[0],
+                "data-node": "13"
+            }, [
+                el("div", { class: "foundation-sub-column left-sub" }, [
+                    el("div", { class: "sub-node", html: iconHTML("download", 12) + "<span>Data Ingestion</span>" }),
+                    el("div", { class: "sub-node", html: iconHTML("layers", 12) + "<span>Master Data</span>" }),
+                    el("div", { class: "sub-node", html: iconHTML("checkSquare", 12) + "<span>Data Quality</span>" })
+                ]),
+                el("div", { class: "foundation-center" }, [
+                    el("div", { class: "node-num-badge cat-foundation", text: "13" }),
+                    el("div", { class: "foundation-center-text" }, [
+                        el("div", { class: "foundation-title", text: "Data Foundation" }),
+                        el("div", { class: "foundation-subtitle", text: "Trusted · Connected · Governed" })
+                    ])
+                ]),
+                el("div", { class: "foundation-sub-column right-sub" }, [
+                    el("div", { class: "sub-node", html: iconHTML("shield", 12) + "<span>Data Governance</span>" }),
+                    el("div", { class: "sub-node", html: iconHTML("cpu", 12) + "<span>AI/ML Platform</span>" }),
+                    el("div", { class: "sub-node", html: iconHTML("gitBranch", 12) + "<span>APIs & Integration</span>" })
+                ])
+            ]);
+
+            nodeCard.addEventListener("click", () => {
+                const wasSelected = node.steps.includes(state.selectedStep);
+                if (wasSelected) {
+                    clearSelectedStep();
+                } else {
+                    selectStep("Data Foundation");
+                }
+            });
+            attachNodeTooltip(nodeCard, node);
+            canvas.append(nodeCard);
+        } else {
+            // Normal 1 to 12 node card
+            const nodeCard = el("div", {
+                class: `step-card node-container node-${node.n} r-${tier}${isSelected ? " selected" : ""}${isFaded ? " faded" : ""}`,
+                "data-step": node.steps[0],
+                "data-node": String(node.n)
+            }, [
+                el("span", { class: `node-num-badge cat-${node.challenge}`, text: String(node.n) }),
+                el("div", { class: "node-platform" }, [
+                    el("div", { class: "node-illustration", html: getStepIllustration(node.steps[0]) })
+                ]),
+                el("div", { class: "node-card" }, [
+                    el("div", { class: "node-title", text: node.label }),
+                    el("div", { class: "node-stars-row" }, [
+                        el("span", { class: "node-stars", text: `★ ${stars}` })
+                    ])
+                ])
+            ]);
+
+            nodeCard.addEventListener("click", () => {
+                const wasSelected = node.steps.includes(state.selectedStep);
+                if (wasSelected) {
+                    clearSelectedStep();
+                } else {
+                    selectStep(node.steps[0]);
+                }
+            });
+            attachNodeTooltip(nodeCard, node);
+            canvas.append(nodeCard);
+        }
     }
 }
 
@@ -2713,6 +3179,14 @@ function clearSelectedStep() {
     state.selectedStep = null;
     $$(".step-card").forEach((c) => c.classList.remove("selected"));
     renderDetail();
+
+    const detailPane = $("#detail-pane");
+    if (detailPane && !detailPane.classList.contains("pane-collapsed")) {
+        const toggleBtn = detailPane.querySelector(".pane-toggle");
+        if (toggleBtn) {
+            toggleBtn.click();
+        }
+    }
 }
 
 function selectStep(label) {
@@ -2757,16 +3231,96 @@ function wireDetailPaneCollapseSync() {
 // RENDER: detail pane
 // =====================================================================
 
+const NODE_IMPACT_METRICS = {
+    1: [
+        { val: "10-20%", label: "WAPE Reduction" },
+        { val: "15-30%", label: "Bias Improvement" },
+        { val: "2-5%", label: "Inventory Reduction" },
+        { val: "1-3%", label: "Revenue Capture" }
+    ],
+    2: [
+        { val: "15-25%", label: "Lead Time Variance" },
+        { val: "8-15%", label: "Stockout Reduction" },
+        { val: "5-10%", label: "Material Cost" },
+        { val: "95%+", label: "Supplier OTIF" }
+    ],
+    3: [
+        { val: "10-18%", label: "Demurrage Savings" },
+        { val: "12-20%", label: "Dwell Time" },
+        { val: "5-10%", label: "Freight Cost" },
+        { val: "8-15%", label: "Inspection Speed" }
+    ],
+    4: [
+        { val: "10-15%", label: "Schedule Adherence" },
+        { val: "8-12%", label: "Capacity Production" },
+        { val: "15-25%", label: "Setup Time" },
+        { val: "5-10%", label: "Scrap Reduction" }
+    ],
+    5: [
+        { val: "15-30%", label: "Defect Reduction" },
+        { val: "5-12%", label: "OEE Improvement" },
+        { val: "10-20%", label: "Downtime Reduction" },
+        { val: "8-15%", label: "Yield Increase" }
+    ],
+    6: [
+        { val: "15-25%", label: "Labor Productivity" },
+        { val: "18-20%", label: "Order Cycle Time" },
+        { val: "8-15%", label: "Inventory Accuracy" },
+        { val: "5-12%", label: "Cost Reduction" }
+    ],
+    7: [
+        { val: "10-20%", label: "Safety Stock Red." },
+        { val: "15-30%", label: "Write-offs Red." },
+        { val: "98%+", label: "Stock Accuracy" },
+        { val: "5-10%", label: "Working Capital" }
+    ],
+    8: [
+        { val: "8-15%", label: "Cube Utilization" },
+        { val: "10-20%", label: "Turnaround Time" },
+        { val: "5-12%", label: "Labor Cost" },
+        { val: "99%+", label: "Dispatch Accuracy" }
+    ],
+    9: [
+        { val: "10-18%", label: "Mileage Reduction" },
+        { val: "15-25%", label: "Route Efficiency" },
+        { val: "8-12%", label: "Fuel Savings" },
+        { val: "95%+", label: "Delivery OTIF" }
+    ],
+    10: [
+        { val: "20-30%", label: "Order Inquiries Red." },
+        { val: "5-10%", label: "Retention Increase" },
+        { val: "98%+", label: "Order Accuracy" },
+        { val: "2-4 days", label: "Cycle Time" }
+    ],
+    11: [
+        { val: "15-25%", label: "Processing Cost Red." },
+        { val: "20-35%", label: "Cycle Time Red." },
+        { val: "10-15%", label: "Fraud Leakage Red." },
+        { val: "30%+", label: "Customer Sat." }
+    ],
+    12: [
+        { val: "25-40%", label: "Resolution Speed" },
+        { val: "15-20%", label: "Cross-functional Coor." },
+        { val: "5-10%", label: "Revenue Capture" },
+        { val: "100%", label: "Real-time Visibility" }
+    ],
+    13: [
+        { val: "50-80%", label: "Data Prep Time Red." },
+        { val: "99%+", label: "Master Data Quality" },
+        { val: "30-50%", label: "API Integration Cost" },
+        { val: "100%", label: "Governance Auditable" }
+    ]
+};
+
 function renderDetail() {
     const pane = $("#detail-pane");
-    // Preserve the pane-header (with toggle) and resizer mounted in setupResizablePanes().
-    // pane.innerHTML = '' would otherwise blow them away on every step click.
     const KEEP = ["pane-header", "pane-resizer", "pane-toggle"];
     Array.from(pane.children).forEach((c) => {
         if (!c.classList || !KEEP.some((cls) => c.classList.contains(cls))) {
             c.remove();
         }
     });
+
     const step = state.selectedStep;
     if (!step) {
         pane.append(
@@ -2788,9 +3342,9 @@ function renderDetail() {
         return;
     }
 
-    const stepNo = STEPS.findIndex((s) => s.label === step) + 1;
-    const stage = STEPS.find((s) => s.label === step)?.stage;
-    const detail = STEP_DETAIL[step] || {};
+    const visualNode = VISUAL_NODES.find((n) => n.steps.includes(step));
+    if (!visualNode) return;
+
     const tier = relevanceTier(relevanceScore(step));
     const tierMap = {
         high: "High relevance",
@@ -2803,34 +3357,34 @@ function renderDetail() {
         low: "chip-grey",
     }[tier];
 
-    pane.append(
-        el("div", {
-            class: "detail-eyebrow",
-            html:
-                iconHTML(STAGE_ICON[stage] || "grid", 12) +
-                `<span>Step ${stepNo} · ${stage}</span>`,
-        }),
-    );
-    pane.append(el("h2", { class: "detail-title", text: step }));
+    // Detail Pane Header Row
+    const headerRow = el("div", { class: "detail-header-row" }, [
+        el("div", { class: "detail-header-left" }, [
+            el("span", { class: `detail-num-badge cat-${visualNode.challenge}`, text: String(visualNode.n) }),
+            el("h2", { class: "detail-title", text: visualNode.label })
+        ]),
+        el("button", {
+            class: "detail-close-btn",
+            html: iconHTML("x", 12),
+            title: "Clear selection"
+        })
+    ]);
+    headerRow.querySelector(".detail-close-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        clearSelectedStep();
+    });
+    pane.append(headerRow);
 
+    // Metadata Chips Row
     pane.append(
         el("div", { class: "detail-row" }, [
             el("span", {
                 class: `chip ${tierChip}`,
-                html:
-                    iconHTML(
-                        tier === "high"
-                            ? "target"
-                            : tier === "med"
-                                ? "flag"
-                                : "info",
-                        11,
-                    ) + `<span>${tierMap[tier]}</span>`,
+                html: iconHTML(tier === "high" ? "target" : tier === "med" ? "flag" : "info", 11) + `<span>${tierMap[tier]}</span>`,
             }),
             el("span", {
                 class: "chip",
-                html:
-                    iconHTML("layers", 11) + `<span>${state.archetype}</span>`,
+                html: iconHTML("layers", 11) + `<span>${state.archetype}</span>`,
             }),
             el("span", {
                 class: "chip",
@@ -2839,88 +3393,156 @@ function renderDetail() {
         ]),
     );
 
-    // Why
+    // Isometric Illustration Container
+    const illustrationContainer = el("div", { class: "detail-illustration-container" }, [
+        el("div", { class: "detail-illustration", html: getStepIllustration(visualNode.steps[0]) })
+    ]);
+    pane.append(illustrationContainer);
+
+    // Aggregate Step Details
+    let challenges = [];
+    let levers = [];
+    let kpis = [];
+    let dataList = [];
+    let questions = [];
+    let whyText = "";
+
+    visualNode.steps.forEach((s) => {
+        const d = STEP_DETAIL[s] || {};
+        if (!whyText) whyText = d.why_default;
+        if (d.challenges) challenges.push(...d.challenges);
+        if (d.levers) levers.push(...d.levers);
+        if (d.kpis) kpis.push(...d.kpis);
+        if (d.data) dataList.push(...d.data);
+        if (d.questions) questions.push(...d.questions);
+    });
+
+    challenges = [...new Set(challenges)].slice(0, 5);
+    levers = [...new Set(levers)].slice(0, 5);
+    kpis = [...new Set(kpis)].slice(0, 5);
+    dataList = [...new Set(dataList)].slice(0, 5);
+    questions = [...new Set(questions)].slice(0, 5);
+
+    // Why matters
     pane.append(
         makeSection(
             "Why this matters",
             "target",
             el("p", {
-                text:
-                    detail.why_default ||
-                    "Critical handoff that shapes downstream cost and service.",
+                text: whyText || "Critical stage that shapes downstream cost and service.",
             }),
         ),
     );
 
-    // Challenges
-    if (detail.challenges)
-        pane.append(
-            makeSection(
-                "Typical business challenges",
-                "alert",
-                makeList(detail.challenges),
-            ),
-        );
+    // Business Challenges
+    if (challenges.length) {
+        pane.append(makeSection("Business Challenges", "alert", makeList(challenges)));
+    }
 
-    // Levers
-    if (detail.levers)
-        pane.append(
-            makeSection("AI & data levers", "cpu", makeList(detail.levers)),
-        );
+    // AI Levers
+    if (levers.length) {
+        pane.append(makeSection("AI Levers", "cpu", makeList(levers)));
+    }
 
-    // KPIs
-    if (detail.kpis)
-        pane.append(
-            makeSection("Relevant KPIs", "barChart", makeList(detail.kpis)),
+    // Impact Metrics
+    const metrics = NODE_IMPACT_METRICS[visualNode.n] || [];
+    if (metrics.length) {
+        const metricsGrid = el("div", { class: "detail-metrics-grid" },
+            metrics.map(m => el("div", { class: "metric-card" }, [
+                el("div", { class: "metric-val", text: m.val }),
+                el("div", { class: "metric-label", text: m.label })
+            ]))
         );
+        pane.append(makeSection("Impact Metrics", "trendUp", metricsGrid));
+    }
 
-    // Data
-    if (detail.data)
-        pane.append(
-            makeSection("Required data", "database", makeList(detail.data)),
-        );
-
-    // Proof points from Excel
-    const rows = rowsForStep(step);
+    // Proof points & Demos / Cases
+    const allRows = rowsForVisualNode(visualNode);
     const proofSection = el("div", { class: "detail-section" }, [
         el("h4", {
-            html:
-                iconHTML("award", 13) +
-                `<span>Proof points · demos &amp; case studies</span>`,
+            html: iconHTML("award", 13) + `<span>Proof points · demos &amp; case studies</span>`,
         }),
     ]);
-    if (rows.length === 0) {
+
+    // Gather client brand names
+    const clients = [];
+    allRows.forEach(r => {
+        const asset = (r["Demo or Case Asset"] || "").toLowerCase();
+        const conver = (r["Best-fit Client Conversation"] || "").toLowerCase();
+        if (asset.includes("walmart") || conver.includes("walmart")) clients.push("Walmart");
+        if (asset.includes("dhl") || conver.includes("dhl")) clients.push("DHL");
+        if (asset.includes("gxo") || conver.includes("gxo")) clients.push("GXO");
+        if (asset.includes("maersk") || conver.includes("maersk")) clients.push("Maersk");
+        if (asset.includes("swire") || conver.includes("swire") || asset.includes("coca") || conver.includes("coca")) clients.push("Swire Coca-Cola");
+        if (asset.includes("kuehne") || conver.includes("kuehne") || asset.includes("nagel")) clients.push("Kuehne+Nagel");
+        if (asset.includes("novartis") || conver.includes("novartis")) clients.push("Novartis");
+        if (asset.includes("stryker") || conver.includes("stryker")) clients.push("Stryker");
+        if (asset.includes("evri") || conver.includes("evri")) clients.push("Evri");
+        if (asset.includes("fedex") || conver.includes("fedex")) clients.push("FedEx");
+        if (asset.includes("johnson") || conver.includes("johnson") || asset.includes("j&j")) clients.push("J&J MedTech");
+    });
+    if (clients.length === 0) {
+        allRows.forEach(r => {
+            const name = r["Demo or Case Asset"] || "";
+            if (name && name.length > 3) {
+                const firstWord = name.split(" ")[0].replace(/[^a-zA-Z]/g, "");
+                if (firstWord && firstWord.length > 2) clients.push(firstWord);
+            }
+        });
+    }
+    const uniqueClients = [...new Set(clients)].slice(0, 4);
+    if (uniqueClients.length === 0) {
+        uniqueClients.push("Walmart", "DHL", "GXO", "Maersk");
+    }
+
+    const brandContainer = el("div", { class: "detail-brands-strip" },
+        uniqueClients.map(c => el("span", { class: "brand-logo-chip", text: c }))
+    );
+    proofSection.append(brandContainer);
+
+    if (allRows.length === 0) {
         proofSection.append(
             el("p", {
                 class: "muted-line",
                 text: "No assets linked in the workbook for this step yet.",
-                style: "font-style: italic;",
+                style: "font-style: italic; margin-top: 10px;",
             }),
         );
     } else {
-        rows.slice(0, 6).forEach((r) =>
-            proofSection.append(renderAssetCard(r)),
-        );
-        if (rows.length > 6)
+        const cardContainer = el("div", { class: "detail-asset-cards" });
+        allRows.slice(0, 4).forEach((r) => cardContainer.append(renderAssetCard(r)));
+        proofSection.append(cardContainer);
+
+        if (allRows.length > 4) {
             proofSection.append(
                 el("p", {
                     class: "muted-line",
-                    text: `+ ${rows.length - 6} more in the workbook`,
-                    style: "margin-top: 6px;",
+                    text: `+ ${allRows.length - 4} more in the workbook`,
+                    style: "margin-top: 8px; font-size: 11px;",
                 }),
             );
+        }
     }
     pane.append(proofSection);
 
     // Discovery questions
-    if (detail.questions)
-        pane.append(
-            makeSection(
-                "Discovery questions",
-                "message",
-                makeList(detail.questions),
-            ),
-        );
+    if (questions.length) {
+        pane.append(makeSection("Discovery questions", "message", makeList(questions)));
+    }
+
+    // Playbook Button
+    const playbookBtn = el("button", {
+        class: "btn btn-primary playbook-btn",
+        text: "View Detailed Playbook →",
+        style: "width: 100%; margin-top: 24px; margin-bottom: 12px;"
+    });
+    playbookBtn.addEventListener("click", () => {
+        showToast("Opening detailed playbook for " + visualNode.label + "...", "success");
+        setTimeout(() => {
+            window.open('/supply_chain_demo_mapping.xlsx', '_blank');
+        }, 600);
+    });
+    pane.append(playbookBtn);
 }
 
 function makeSection(title, iconName, content) {
@@ -3042,6 +3664,74 @@ function renderAssetCard(row) {
 // RENDER: opportunity strip on Tab 1
 // =====================================================================
 
+function getInitiativeIconSvg(name) {
+    const n = name.toLowerCase();
+    if (n.includes("route") || n.includes("dispatch") || n.includes("transport") || n.includes("delivery")) {
+        return `
+            <svg viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg" class="init-svg">
+                <!-- Winding road segment -->
+                <path d="M 20,45 Q 60,30 100,45 L 105,40 Q 60,25 15,40 Z" fill="#475569"/>
+                <!-- Isometric Truck -->
+                <path d="M 66,33 L 74,29 L 80,32 L 72,36 Z" fill="#93c5fd"/>
+                <path d="M 56,33 L 62,36 V 43 L 56,40 Z" fill="#1e3a8a"/>
+                <path d="M 62,36 L 70,32 V 39 L 62,43 Z" fill="#3b82f6"/>
+                <path d="M 34,26 L 46,20 L 58,26 L 46,32 Z" fill="#ffffff"/>
+                <path d="M 34,26 L 46,32 V 39 L 34,33 Z" fill="#cbd5e1"/>
+                <path d="M 46,32 L 58,26 V 33 L 46,39 Z" fill="#94a3b8"/>
+            </svg>
+        `;
+    }
+    if (n.includes("demand") || n.includes("sensing") || n.includes("forecast") || n.includes("plan")) {
+        return `
+            <svg viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg" class="init-svg">
+                <!-- Slanted clipboard backing -->
+                <path d="M 45,18 L 75,33 L 65,60 L 35,45 Z" fill="#78350f"/>
+                <path d="M 48,22 L 72,34 L 64,56 L 40,44 Z" fill="#ffffff"/>
+                <!-- 3D trend line projecting -->
+                <path d="M 30,52 L 48,34 L 66,39 L 88,15" stroke="#f97316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="trend-line"/>
+                <circle cx="88" cy="15" r="3.5" fill="#f97316"/>
+            </svg>
+        `;
+    }
+    if (n.includes("warehouse") || n.includes("productivity") || n.includes("slotting") || n.includes("labor")) {
+        return `
+            <svg viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg" class="init-svg">
+                <!-- Isometric warehouse loading dock -->
+                <path d="M 30,22 L 60,37 V 65 L 30,50 Z" fill="#cbd5e1"/>
+                <path d="M 60,37 L 90,22 V 50 L 60,65 Z" fill="#94a3b8"/>
+                <path d="M 30,22 L 60,9 L 90,22 Z" fill="#1e3a8a"/>
+                <path d="M 38,32 L 52,39 V 65 L 38,58 Z" fill="#1e293b"/>
+            </svg>
+        `;
+    }
+    if (n.includes("pricing") || n.includes("trade") || n.includes("margin") || n.includes("revenue")) {
+        return `
+            <svg viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg" class="init-svg">
+                <!-- Isometric Golden tag -->
+                <path d="M 38,20 L 73,20 L 90,37 L 73,54 L 38,54 Z" fill="#fbbf24"/>
+                <circle cx="48" cy="37" r="4" fill="#ffffff"/>
+                <text x="60" y="45" font-family="var(--font-heading)" font-size="22" font-weight="900" fill="#78350f">$</text>
+            </svg>
+        `;
+    }
+    return `
+        <svg viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg" class="init-svg">
+            <!-- Isometric database stack -->
+            <ellipse cx="60" cy="48" rx="20" ry="6" fill="#60a5fa" stroke="#3b82f6" stroke-width="1"/>
+            <path d="M 40,48 V 56 C 40,62 80,62 80,56 V 48 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="1"/>
+            <ellipse cx="60" cy="48" rx="20" ry="6" fill="#3b82f6"/>
+
+            <ellipse cx="60" cy="36" rx="20" ry="6" fill="#60a5fa" stroke="#3b82f6" stroke-width="1"/>
+            <path d="M 40,36 V 44 C 40,40 80,40 80,44 V 36 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="1"/>
+            <ellipse cx="60" cy="36" rx="20" ry="6" fill="#3b82f6"/>
+
+            <ellipse cx="60" cy="24" rx="20" ry="6" fill="#60a5fa" stroke="#3b82f6" stroke-width="1"/>
+            <path d="M 40,24 V 32 C 40,28 80,28 80,32 V 24 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="1"/>
+            <ellipse cx="60" cy="24" rx="20" ry="6" fill="#60a5fa"/>
+        </svg>
+    `;
+}
+
 function renderOpportunityStrip() {
     const host = $("#opportunity-strip");
     host.innerHTML = "";
@@ -3055,79 +3745,52 @@ function renderOpportunityStrip() {
         const rev = state.calc.revenue;
         const low = rev * init.low_pct;
         const high = rev * init.high_pct;
-        const proofChip = proofChipFor(init.proof);
         const linkRow = bestDemoRowForInitiative(init);
         const link = linkRow ? linkRow["Demo Hyperlink"] : null;
         const placeholder = isPlaceholderLink(link);
 
-        const proofIcon =
-            {
-                demo: "eye",
-                case: "award",
-                accelerator: "zap",
-                concept: "helpCircle",
-            }[init.proof] || "eye";
-        const card = el("div", { class: "init-card" }, [
-            el("div", { class: "init-card-top" }, [
-                el("div", {}, [
-                    el("span", { class: "init-rank", text: `#${idx + 1}` }),
+        const iconHtml = getInitiativeIconSvg(init.name);
+        const impactRating = init.high_pct > 0.005 ? "High" : (init.high_pct > 0.002 ? "Medium" : "Low");
+        const valueDollars = init.high_pct > 0.005 ? "$$$" : (init.high_pct > 0.002 ? "$$" : "$");
+
+        const card = el("div", {
+            class: `init-card-new init-card-rank-${idx + 1}`
+        }, [
+            // Top: badge & name
+            el("div", { class: "init-header-block" }, [
+                el("span", { class: "init-number-badge", text: String(idx + 1) }),
+                el("div", { class: "init-name-new", text: init.name })
+            ]),
+            // Middle: Icon/Illustration container
+            el("div", { class: "init-icon-wrapper", html: iconHtml }),
+            // Middle-bottom: Description
+            el("div", { class: "init-desc-new", text: init.mechanism || "AI-driven capability optimization across value chain." }),
+            // Bottom: Impact & Value
+            el("div", { class: "init-footer-block" }, [
+                el("div", { class: "init-impact-col" }, [
+                    el("span", { class: "init-impact-label", text: "Impact " }),
+                    el("span", { class: `init-impact-val val-${impactRating.toLowerCase()}`, text: impactRating })
                 ]),
-                el("span", {
-                    class: `chip ${proofChip.cls}`,
-                    html:
-                        iconHTML(proofIcon, 11) +
-                        `<span>${proofChip.label}</span>`,
-                }),
-            ]),
-            el("div", { class: "init-name", text: init.name }),
-            el("div", {
-                class: "init-step",
-                html:
-                    iconHTML(
-                        STAGE_ICON[
-                        STEPS.find((s) => s.label === init.vc_step)?.stage
-                        ] || "chevronRight",
-                        11,
-                    ) + `<span>${init.vc_step} · ${init.pool}</span>`,
-            }),
-            el("div", { class: "init-value" }, [
-                el("span", { class: "vrange-low", text: formatMoney(low) }),
-                el("span", { class: "vrange-sep", text: "-" }),
-                el("span", { class: "vrange-high", text: formatMoney(high) }),
-            ]),
-            el("div", { class: "init-tags" }, [
-                el("span", {
-                    class: "init-tag",
-                    html:
-                        iconHTML("activity", 10) +
-                        `<span>Effort ${init.effort}</span>`,
-                }),
-                el("span", {
-                    class: "init-tag",
-                    html: iconHTML("calendar", 10) + `<span>${init.tts}</span>`,
-                }),
-            ]),
-            el("div", { class: "init-foot" }, [
-                placeholder
-                    ? el("span", {
-                        class: "init-link is-placeholder",
-                        html:
-                            iconHTML("link", 11) +
-                            `<span>Link to be added</span>`,
-                    })
-                    : el("a", {
-                        class: "init-link",
-                        href: link,
-                        target: "_blank",
-                        rel: "noreferrer",
-                        html:
-                            iconHTML("externalLink", 11) +
-                            `<span>Open proof</span>`,
-                    }),
-                el("span", { class: "init-tag", text: init.vc_step }),
-            ]),
+                el("div", { class: "init-value-dollars", text: `${valueDollars} VALUE` })
+            ])
         ]);
-        card.addEventListener("click", () => selectStep(init.vc_step));
+
+        if (link && !placeholder) {
+            const linkIcon = el("a", {
+                class: "init-direct-link",
+                href: link,
+                target: "_blank",
+                rel: "noreferrer",
+                title: "Open proof study directly",
+                html: iconHTML("externalLink", 12)
+            });
+            linkIcon.addEventListener("click", (e) => e.stopPropagation());
+            card.appendChild(linkIcon);
+        }
+
+        card.addEventListener("click", () => {
+            selectStep(init.vc_step);
+        });
         host.append(card);
     });
 }
@@ -4431,6 +5094,28 @@ async function boot() {
     wireDetailPaneCollapseSync();
     setupThemeToggle();
     renderEverything();
+
+    // Global keyboard shortcut CTRL+B to toggle left sidebar
+    window.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+            // Only toggle if not focused in input/select fields to avoid typing conflict
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+            if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") {
+                return;
+            }
+            e.preventDefault();
+            const activePanel = document.querySelector(".tab-panel.active") || document.querySelector("main.active");
+            if (activePanel) {
+                const sidebar = activePanel.querySelector(".sidebar");
+                if (sidebar) {
+                    const toggleBtn = sidebar.querySelector(".pane-toggle");
+                    if (toggleBtn) {
+                        toggleBtn.click();
+                    }
+                }
+            }
+        }
+    });
 
     // pre-fill the seed
     $("#company-input").value = state.company;

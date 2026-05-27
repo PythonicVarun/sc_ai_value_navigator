@@ -7,7 +7,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
             rel="stylesheet"
         />
         <link rel="stylesheet" href="/static/styles.css" />
@@ -20,24 +20,21 @@
                     <svg viewBox="0 0 32 32" fill="none">
                         <path
                             d="M4 22 L10 12 L16 18 L22 8 L28 16"
-                            stroke="#F26A2E"
-                            stroke-width="2.5"
+                            stroke="var(--accent)"
+                            stroke-width="3"
                             stroke-linecap="round"
                             stroke-linejoin="round"
                         />
-                        <circle cx="10" cy="12" r="2" fill="#F26A2E" />
-                        <circle cx="22" cy="8" r="2" fill="#1F2933" />
+                        <circle cx="10" cy="12" r="3" fill="var(--accent)" />
+                        <circle cx="22" cy="8" r="3" fill="var(--text)" />
                     </svg>
                 </div>
                 <div class="brand-text">
-                    <div class="brand-title">
-                        Supply Chain AI Value Navigator
-                    </div>
-                    <div class="brand-subtitle">
-                        Pre-sales cockpit · Straive &middot; Gramener
-                    </div>
+                    <h1 class="brand-title">Supply Chain AI Value Navigator</h1>
+                    <div class="brand-subtitle">Pre-Sales Cockpit · Straive & Gramener</div>
                 </div>
             </div>
+
             <nav class="tabs" role="tablist">
                 <button
                     class="tab active"
@@ -62,6 +59,7 @@
                     <span class="tab-label">Opportunity Calculator</span>
                 </button>
             </nav>
+
             <div class="topbar-meta">
                 <button
                     id="theme-toggle"
@@ -71,8 +69,8 @@
                     aria-label="Switch theme"
                 ></button>
                 <div id="status-pill" class="status-pill status-loading">
-                    <span class="status-dot"></span
-                    ><span id="status-text">Initialising…</span>
+                    <span class="status-dot"></span>
+                    <span id="status-text">Initialising…</span>
                 </div>
             </div>
         </header>
@@ -84,16 +82,17 @@
             <div class="resizable-container rc-right">
                 <aside class="sidebar">
                     <div class="sidebar-section">
+                        <h3 class="sidebar-heading" data-icon="sliders">Configure Client</h3>
                         <label class="field">
-                            <span class="field-label" data-icon="building"
-                                >Organisation</span
-                            >
-                            <input
-                                id="company-input"
-                                type="text"
-                                placeholder="e.g. Swire Coca-Cola"
-                                autocomplete="off"
-                            />
+                            <span class="field-label" data-icon="building">Organisation</span>
+                            <div class="input-wrapper">
+                                <input
+                                    id="company-input"
+                                    type="text"
+                                    placeholder="e.g. Swire Coca-Cola"
+                                    autocomplete="off"
+                                />
+                            </div>
                         </label>
                         <div class="action-row">
                             <button id="analyze-btn" class="btn btn-primary">
@@ -121,44 +120,31 @@
                             ></button>
                         </div>
                         <div id="analyze-helper" class="field-helper">
-                            LLM inference if API key set, manual otherwise.
+                            LLM inference automatically infers archetype, region, steps & drivers.
                         </div>
                     </div>
 
                     <div class="sidebar-section">
+                        <h3 class="sidebar-heading" data-icon="tool">Parameters</h3>
                         <label class="field">
-                            <span class="field-label" data-icon="layers"
-                                >Archetype</span
-                            >
+                            <span class="field-label" data-icon="layers">Archetype</span>
                             <select id="archetype-select"></select>
-                            <span
-                                id="archetype-helper"
-                                class="helper-grey"
-                            ></span>
+                            <span id="archetype-helper" class="helper-grey"></span>
                         </label>
 
                         <label class="field">
-                            <span class="field-label" data-icon="user"
-                                >Buyer role</span
-                            >
+                            <span class="field-label" data-icon="user">Buyer Role</span>
                             <select id="buyer-select"></select>
                             <span id="buyer-helper" class="helper-grey"></span>
                         </label>
 
                         <label class="field">
-                            <span class="field-label" data-icon="globe"
-                                >Region</span
-                            >
-                            <input
-                                id="region-input"
-                                type="text"
-                                value="Global"
-                            />
+                            <span class="field-label" data-icon="globe">Region</span>
+                            <input id="region-input" type="text" value="Global" />
                         </label>
+
                         <label class="field">
-                            <span class="field-label" data-icon="barChart"
-                                >Data maturity</span
-                            >
+                            <span class="field-label" data-icon="barChart">Data Maturity</span>
                             <select id="maturity-select">
                                 <option>Low</option>
                                 <option>Developing</option>
@@ -168,9 +154,7 @@
                         </label>
 
                         <label class="field">
-                            <span class="field-label" data-icon="crosshair"
-                                >Primary objective</span
-                            >
+                            <span class="field-label" data-icon="crosshair">Primary Objective</span>
                             <select id="objective-select">
                                 <option>Cost to serve reduction</option>
                                 <option>Service level improvement</option>
@@ -179,34 +163,25 @@
                                 <option>Revenue growth</option>
                                 <option>Compliance / leakage reduction</option>
                                 <option>Data modernization</option>
-                                <option>
-                                    Sustainability / carbon reduction
-                                </option>
+                                <option>Sustainability / carbon reduction</option>
                             </select>
                         </label>
                     </div>
 
                     <div class="sidebar-section">
+                        <h3 class="sidebar-heading" data-icon="eye">Filters</h3>
                         <div class="toggle-row">
                             <label class="toggle">
-                                <input
-                                    id="toggle-relevant"
-                                    type="checkbox"
-                                    checked
-                                />
+                                <input id="toggle-relevant" type="checkbox" checked />
                                 <span class="toggle-track"></span>
-                                <span class="toggle-label" data-icon="eye"
-                                    >Show relevant only</span
-                                >
+                                <span class="toggle-label" data-icon="eye">Show relevant only</span>
                             </label>
                         </div>
                         <div class="toggle-row">
                             <label class="toggle">
                                 <input id="toggle-quickwins" type="checkbox" />
                                 <span class="toggle-track"></span>
-                                <span class="toggle-label" data-icon="zap"
-                                    >Quick wins only</span
-                                >
+                                <span class="toggle-label" data-icon="zap">Quick wins only</span>
                             </label>
                         </div>
                     </div>
@@ -214,17 +189,12 @@
                     <div class="sidebar-section">
                         <div class="card inference-card" id="inference-card">
                             <div class="inference-head">
-                                <span class="inference-title" data-icon="cpu"
-                                    >Inference summary</span
-                                >
-                                <span id="inference-mode" class="chip chip-grey"
-                                    >Manual</span
-                                >
+                                <span class="inference-title" data-icon="cpu">Inference Summary</span>
+                                <span id="inference-mode" class="chip chip-grey">Manual</span>
                             </div>
                             <div id="inference-body" class="inference-body">
                                 <div class="muted-line">
-                                    Enter a company name and click Analyze
-                                    Company.
+                                    Enter a company name and click Analyze Company.
                                 </div>
                             </div>
                         </div>
@@ -234,43 +204,50 @@
 
             <section class="map-main">
                 <div class="map-header">
-                    <div>
-                        <div class="section-eyebrow" data-icon="map">
-                            Tab 01
-                        </div>
-                        <h1 class="section-title">Client value-chain map</h1>
-                        <p class="section-sub">
-                            High-relevance steps glow. Click any card for proof,
-                            levers, and discovery questions.
-                        </p>
+                    <!-- Left: Challenge Categories Legend Box -->
+                    <div class="challenge-legend-box">
+                        <div class="legend-box-title">CHALLENGE CATEGORIES</div>
+                        <ul class="legend-box-list" id="challenge-legend">
+                        </ul>
                     </div>
-                    <div class="legend">
-                        <div class="legend-group">
-                            <span class="legend-dot dot-high"></span>High
-                            relevance
-                            <span class="legend-dot dot-med"></span>Medium
-                            <span class="legend-dot dot-low"></span>Low
-                        </div>
-                        <div class="legend-group" id="challenge-legend"></div>
+
+                    <!-- Center: Main Titles -->
+                    <div class="map-header-center">
+                        <h2 class="map-main-title">Supply Chain AI Value Navigator</h2>
+                        <p class="map-main-subtitle">• A visual operating map of where data and AI create value •</p>
+                    </div>
+
+                    <!-- Right: Exploration Guide -->
+                    <div class="explore-guide-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="guide-hand-icon" style="width: 14px; height: 14px;">
+                            <path d="M10 11V6a2 2 0 0 1 4 0v5"/>
+                            <path d="M14 10.5a2.5 2.5 0 0 1 5 0V12a7 7 0 0 1-14 0v-1.5a2.5 2.5 0 0 1 5 0"/>
+                        </svg>
+                        <span>Click any node to explore</span>
                     </div>
                 </div>
 
-                <div class="map-canvas" id="map-canvas">
-                    <!-- stages render here -->
+                <div class="map-canvas-container">
+                    <!-- The dynamic map canvas containing columns for stages -->
+                    <div class="map-canvas" id="map-canvas">
+                        <!-- stages render here -->
+                    </div>
                 </div>
 
                 <div class="opportunity-strip-host">
-                    <div class="strip-header">
-                        <h3
-                            class="strip-title"
-                            data-icon="star"
-                            data-icon-size="16"
-                        >
-                            Recommended first-wave initiatives
-                        </h3>
-                        <div class="strip-meta" id="strip-meta"></div>
+                    <div class="opportunity-strip-left">
+                        <div class="opportunity-strip-left-title">TOP OPPORTUNITY LEVERS</div>
+                        <div class="opportunity-strip-left-desc">High impact initiative templates measurable value with AI.</div>
                     </div>
-                    <div class="opportunity-strip" id="opportunity-strip"></div>
+                    <div class="opportunity-strip-content">
+                        <div class="strip-header">
+                            <h3 class="strip-title" data-icon="star" data-icon-size="16">
+                                Recommended Levers &amp; Initiatives
+                            </h3>
+                            <div id="strip-meta" class="strip-meta"></div>
+                        </div>
+                        <div class="opportunity-strip" id="opportunity-strip"></div>
+                    </div>
                 </div>
             </section>
 
@@ -293,13 +270,9 @@
                                 <path d="M12 17h.01" />
                             </svg>
                         </div>
-                        <div class="placeholder-title">
-                            Select a value-chain step
-                        </div>
+                        <div class="placeholder-title">Select a value-chain step</div>
                         <div class="placeholder-sub">
-                            The detail panel shows the why, the levers, the
-                            data, and the proof points pulled from the demo
-                            workbook.
+                            The detail panel displays client questions, AI/Data levers, and proof studies matched from the playbook.
                         </div>
                     </div>
                 </aside>
@@ -311,15 +284,10 @@
             <div class="resizable-container rc-right">
                 <aside class="sidebar">
                     <div class="sidebar-section">
+                        <h3 class="sidebar-heading" data-icon="sliders">Client Profile</h3>
                         <label class="field">
-                            <span class="field-label" data-icon="building"
-                                >Organisation</span
-                            >
-                            <input
-                                id="calc-company"
-                                type="text"
-                                placeholder="Swire Coca-Cola"
-                            />
+                            <span class="field-label" data-icon="building">Organisation</span>
+                            <input id="calc-company" type="text" placeholder="Swire Coca-Cola" />
                         </label>
                         <button
                             id="reset-btn-calc"
@@ -327,30 +295,22 @@
                             data-icon="refresh"
                             title="Reset all scenario fields"
                         >
-                            Reset scenario
+                            Reset Scenario
                         </button>
                         <label class="field" style="margin-top: 14px">
-                            <span class="field-label" data-icon="layers"
-                                >Archetype</span
-                            >
+                            <span class="field-label" data-icon="layers">Archetype</span>
                             <select id="calc-archetype"></select>
                         </label>
                         <label class="field">
-                            <span class="field-label">Buyer role</span>
+                            <span class="field-label" data-icon="user">Buyer Role</span>
                             <select id="calc-buyer"></select>
                         </label>
                         <label class="field">
-                            <span class="field-label">Region</span>
-                            <input
-                                id="calc-region"
-                                type="text"
-                                value="Global"
-                            />
+                            <span class="field-label" data-icon="globe">Region</span>
+                            <input id="calc-region" type="text" value="Global" />
                         </label>
                         <label class="field">
-                            <span class="field-label" data-icon="truck"
-                                >Distribution model</span
-                            >
+                            <span class="field-label" data-icon="truck">Distribution Model</span>
                             <select id="calc-distribution">
                                 <option>Owned</option>
                                 <option>Outsourced</option>
@@ -361,10 +321,9 @@
                     </div>
 
                     <div class="sidebar-section">
+                        <h3 class="sidebar-heading" data-icon="dollar">Financial Base</h3>
                         <label class="field">
-                            <span class="field-label" data-icon="dollar"
-                                >Annual revenue (USD)</span
-                            >
+                            <span class="field-label" data-icon="dollar">Annual Revenue (USD)</span>
                             <div class="input-prefix">
                                 <span class="prefix">$</span>
                                 <input
@@ -374,49 +333,27 @@
                                     step="100000000"
                                     value="3000000000"
                                 />
-                                <span class="suffix" id="revenue-display"
-                                    >3.0B</span
-                                >
+                                <span class="suffix" id="revenue-display">3.0B</span>
                             </div>
                         </label>
                         <label class="field">
-                            <span class="field-label" data-icon="tool"
-                                >Sites / Plants</span
-                            >
-                            <input
-                                id="calc-sites"
-                                type="number"
-                                min="0"
-                                value="14"
-                            />
+                            <span class="field-label" data-icon="tool">Sites / Plants</span>
+                            <input id="calc-sites" type="number" min="0" value="14" />
                         </label>
                         <label class="field">
-                            <span class="field-label" data-icon="warehouse"
-                                >Warehouses / Depots</span
-                            >
-                            <input
-                                id="calc-warehouses"
-                                type="number"
-                                min="0"
-                                value="32"
-                            />
+                            <span class="field-label" data-icon="warehouse">Warehouses / Depots</span>
+                            <input id="calc-warehouses" type="number" min="0" value="32" />
                         </label>
                         <label class="field">
-                            <span class="field-label" data-icon="package"
-                                >Annual shipments / orders</span
-                            >
-                            <input
-                                id="calc-shipments"
-                                type="number"
-                                min="0"
-                                value="48000000"
-                            />
+                            <span class="field-label" data-icon="package">Annual Shipments</span>
+                            <input id="calc-shipments" type="number" min="0" value="48000000" />
                         </label>
                     </div>
 
                     <div class="sidebar-section">
+                        <h3 class="sidebar-heading" data-icon="barChart">Confidence</h3>
                         <label class="field">
-                            <span class="field-label">Data maturity</span>
+                            <span class="field-label" data-icon="barChart">Data Maturity</span>
                             <select id="calc-maturity">
                                 <option>Low</option>
                                 <option>Developing</option>
@@ -425,15 +362,11 @@
                             </select>
                         </label>
                         <label class="field">
-                            <span class="field-label" data-icon="crosshair"
-                                >Primary objective</span
-                            >
+                            <span class="field-label" data-icon="crosshair">Primary Objective</span>
                             <select id="calc-objective"></select>
                         </label>
                         <label class="field">
-                            <span class="field-label" data-icon="shield"
-                                >Inference confidence</span
-                            >
+                            <span class="field-label" data-icon="shield">Inference Confidence</span>
                             <div class="slider-row">
                                 <input
                                     id="calc-confidence"
@@ -448,31 +381,11 @@
                     </div>
 
                     <div class="sidebar-section export-section">
-                        <div class="export-head" data-icon="download">
-                            Export scenario
-                        </div>
+                        <div class="export-head" data-icon="download">Export Scenario</div>
                         <div class="export-row">
-                            <button
-                                id="export-csv"
-                                class="btn btn-ghost"
-                                data-icon="fileText"
-                            >
-                                CSV
-                            </button>
-                            <button
-                                id="export-json"
-                                class="btn btn-ghost"
-                                data-icon="braces"
-                            >
-                                JSON
-                            </button>
-                            <button
-                                id="export-md"
-                                class="btn btn-ghost"
-                                data-icon="fileCode"
-                            >
-                                Markdown
-                            </button>
+                            <button id="export-csv" class="btn btn-ghost" data-icon="fileText">CSV</button>
+                            <button id="export-json" class="btn btn-ghost" data-icon="braces">JSON</button>
+                            <button id="export-md" class="btn btn-ghost" data-icon="fileCode">Markdown</button>
                         </div>
                     </div>
                 </aside>
@@ -481,18 +394,14 @@
             <section class="calc-main">
                 <div class="map-header">
                     <div>
-                        <div class="section-eyebrow" data-icon="sigma">
-                            Tab 02
-                        </div>
-                        <h1 class="section-title">Opportunity calculator</h1>
+                        <div class="section-eyebrow" data-icon="sigma">Value Case</div>
+                        <h2 class="section-title">Opportunity Sizing Calculator</h2>
                         <p class="section-sub">
-                            Transparent low-high ranges. Edit any assumption to
-                            pressure-test the case.
+                            Explore dynamic financial uplifts. Adjust parameters to configure low-high estimates.
                         </p>
                     </div>
                     <div class="calc-note">
-                        All values are assumption-driven estimates, not
-                        guaranteed benefits.
+                        Estimates are model-driven and should be vetted prior to commercial commitment.
                     </div>
                 </div>
 
@@ -500,25 +409,20 @@
 
                 <div class="calc-block">
                     <div class="block-header">
-                        <h3 data-icon="trendUp" data-icon-size="16">
-                            Revenue / value drivers
-                        </h3>
-                        <span class="block-sub"
-                            >Inline-editable. % of revenue exposure × AI
-                            leverage.</span
-                        >
+                        <h3 data-icon="trendUp" data-icon-size="16">Revenue & Value Drivers</h3>
+                        <span class="block-sub">
+                            Click and edit fields directly to adjust revenue exposure and expected uplift.
+                        </span>
                     </div>
                     <div class="table-wrap">
                         <table class="editable-table" id="revenue-table">
                             <thead>
                                 <tr>
                                     <th>Driver</th>
-                                    <th class="right">
-                                        Exposure (% of revenue)
-                                    </th>
-                                    <th class="right">AI leverage low</th>
-                                    <th class="right">AI leverage high</th>
-                                    <th class="right">Notional uplift</th>
+                                    <th class="right">Exposure (% of Revenue)</th>
+                                    <th class="right">AI Leverage Low</th>
+                                    <th class="right">AI Leverage High</th>
+                                    <th class="right">Notional Uplift</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -528,27 +432,20 @@
 
                 <div class="calc-block">
                     <div class="block-header">
-                        <h3 data-icon="pieChart" data-icon-size="16">
-                            Cost pools &amp; AI-addressable heads
-                        </h3>
-                        <span class="block-sub"
-                            >Defaults from archetype assumptions. Click any cell
-                            to override.</span
-                        >
+                        <h3 data-icon="pieChart" data-icon-size="16">Cost Pools & Addressable Base</h3>
+                        <span class="block-sub">
+                            Vary percentage allocations and optimization impact per pool.
+                        </span>
                     </div>
                     <div class="table-wrap">
                         <table class="editable-table" id="cost-table">
                             <thead>
                                 <tr>
-                                    <th>Cost pool</th>
-                                    <th class="right">Pool % rev (low–high)</th>
-                                    <th class="right">
-                                        AI-addressable (low–high)
-                                    </th>
-                                    <th class="right">
-                                        Improvement (low–high)
-                                    </th>
-                                    <th class="right">Addressable base ($)</th>
+                                    <th>Cost Pool</th>
+                                    <th class="right">Pool % Rev (Low–High)</th>
+                                    <th class="right">AI-Addressable (Low–High)</th>
+                                    <th class="right">Improvement (Low–High)</th>
+                                    <th class="right">Addressable Base ($)</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -558,32 +455,26 @@
 
                 <div class="calc-block">
                     <div class="block-header">
-                        <h3 data-icon="award" data-icon-size="16">
-                            Initiatives &amp; annualized value
-                        </h3>
-                        <span class="block-sub"
-                            >Edit any low / high % to reshape the
-                            portfolio.</span
-                        >
+                        <h3 data-icon="award" data-icon-size="16">Initiatives Valuation</h3>
+                        <span class="block-sub">
+                            Enable, disable, or adjust variables of specific initiatives to build the portfolio.
+                        </span>
                     </div>
                     <div class="table-wrap">
-                        <table
-                            class="editable-table initiative-table"
-                            id="initiative-table"
-                        >
+                        <table class="editable-table initiative-table" id="initiative-table">
                             <thead>
                                 <tr>
                                     <th></th>
                                     <th>Initiative</th>
-                                    <th>Value-chain step</th>
-                                    <th>Cost / revenue pool</th>
+                                    <th>Value-chain Step</th>
+                                    <th>Cost / Revenue Pool</th>
                                     <th>Mechanism</th>
                                     <th class="right">Low %rev</th>
                                     <th class="right">High %rev</th>
-                                    <th class="right">Low value</th>
-                                    <th class="right">High value</th>
+                                    <th class="right">Low Value</th>
+                                    <th class="right">High Value</th>
                                     <th>Effort</th>
-                                    <th>Time to pilot</th>
+                                    <th>Time to Pilot</th>
                                     <th>Proof</th>
                                     <th>Demo</th>
                                 </tr>
@@ -595,114 +486,59 @@
 
                 <div class="calc-block">
                     <div class="block-header">
-                        <h3 data-icon="map" data-icon-size="16">
-                            Phased roadmap
-                        </h3>
-                        <span class="block-sub"
-                            >Initiatives auto-bucketed by time-to-pilot.</span
-                        >
+                        <h3 data-icon="map" data-icon-size="16">Execution Roadmap</h3>
+                        <span class="block-sub">Recommended phased implementation flow based on time-to-value.</span>
                     </div>
                     <div class="roadmap-grid" id="roadmap-grid"></div>
                 </div>
 
                 <div class="calc-block formula-block">
                     <div class="block-header">
-                        <h3 data-icon="sigma" data-icon-size="16">
-                            How the math works
-                        </h3>
-                        <span class="block-sub"
-                            >Open formula. Adjust overlap discount, adoption,
-                            confidence below.</span
-                        >
+                        <h3 data-icon="sigma" data-icon-size="16">Quantification Methodology</h3>
+                        <span class="block-sub">Transparent mathematical formula explaining calculated returns.</span>
                     </div>
                     <div class="formula-row">
                         <div class="formula-card">
-                            <div class="formula-eyebrow" data-icon="cpu">
-                                Per initiative
-                            </div>
+                            <div class="formula-eyebrow" data-icon="cpu">Initiative Formula</div>
                             <div class="formula-eq">
-                                Annual&nbsp;Value&nbsp;=&nbsp;<span class="tk"
-                                    >Addressable&nbsp;Base</span
-                                >
-                                &nbsp;×&nbsp;<span class="tk">Improvement</span>
-                                &nbsp;×&nbsp;<span class="tk">Adoption</span>
-                                &nbsp;×&nbsp;<span class="tk">Confidence</span>
+                                Annual Value = <span class="tk">Addressable Base</span> ×
+                                <span class="tk">Improvement</span> × <span class="tk">Adoption</span> ×
+                                <span class="tk">Confidence</span>
                             </div>
                             <ul class="formula-defs">
                                 <li>
-                                    <b>Addressable base</b> - cost or revenue
-                                    pool affected by the initiative.
+                                    <b>Addressable base</b>: Segment of the cost or revenue pool targeted.
                                 </li>
                                 <li>
-                                    <b>Improvement potential</b> - benchmark
-                                    improvement percentage.
+                                    <b>Improvement</b>: Projected optimization rate based on benchmarks.
                                 </li>
                                 <li>
-                                    <b>Adoption</b> - share of operation in
-                                    scope for the horizon.
+                                    <b>Adoption</b>: Rollout rate planned for the phase.
                                 </li>
                                 <li>
-                                    <b>Confidence</b> - derived from data
-                                    maturity &amp; proof strength.
+                                    <b>Confidence</b>: Adjustment factor derived from evidence and data maturity.
                                 </li>
                             </ul>
                         </div>
                         <div class="formula-card">
-                            <div class="formula-eyebrow" data-icon="sliders">
-                                Levers
-                            </div>
+                            <div class="formula-eyebrow" data-icon="sliders">Calculated Modifiers</div>
                             <label class="field">
-                                <span class="field-label" data-icon="trendUp"
-                                    >Adoption (low - high)</span
-                                >
+                                <span class="field-label" data-icon="trendUp">Adoption Range (Low - High)</span>
                                 <div class="slider-row">
-                                    <input
-                                        id="adopt-low"
-                                        type="number"
-                                        step="0.05"
-                                        min="0"
-                                        max="1"
-                                        value="0.7"
-                                    />
+                                    <input id="adopt-low" type="number" step="0.05" min="0" max="1" value="0.7" />
                                     <span class="thin">-</span>
-                                    <input
-                                        id="adopt-high"
-                                        type="number"
-                                        step="0.05"
-                                        min="0"
-                                        max="1"
-                                        value="1.0"
-                                    />
+                                    <input id="adopt-high" type="number" step="0.05" min="0" max="1" value="1.0" />
                                 </div>
                             </label>
                             <label class="field">
-                                <span class="field-label" data-icon="sliders"
-                                    >Overlap discount (low - high %)</span
-                                >
+                                <span class="field-label" data-icon="sliders">Overlap Discount (Low - High %)</span>
                                 <div class="slider-row">
-                                    <input
-                                        id="overlap-low"
-                                        type="number"
-                                        step="1"
-                                        min="0"
-                                        max="60"
-                                        value="15"
-                                    />
+                                    <input id="overlap-low" type="number" step="1" min="0" max="60" value="15" />
                                     <span class="thin">-</span>
-                                    <input
-                                        id="overlap-high"
-                                        type="number"
-                                        step="1"
-                                        min="0"
-                                        max="60"
-                                        value="30"
-                                    />
+                                    <input id="overlap-high" type="number" step="1" min="0" max="60" value="30" />
                                 </div>
                             </label>
-                            <div
-                                class="formula-result"
-                                id="formula-result"
-                            ></div>
+                            <div class="formula-result" id="formula-result"></div>
                         </div>
                     </div>
                 </div>
@@ -710,31 +546,26 @@
         </main>
 
         <footer class="site-footer">
-            <span
-                >Estimates are assumption-driven. Validate with the client
-                before publishing.</span
-            >
-            <span id="footer-source"
-                >Source:
-                <code
-                    ><a
-                        href="supply_chain_demo_mapping.xlsx"
-                        style="text-decoration: none"
-                        target="_blank"
-                        >supply_chain_demo_mapping.xlsx</a
-                    ></code
-                ></span
-            >
+            <span class="footer-copy">
+                All estimations are model-based projections. Always validate underlying parameters with the client prior to sharing.
+            </span>
+            <span id="footer-source">
+                Source:
+                <code>
+                    <a href="supply_chain_demo_mapping.xlsx" style="text-decoration: none" target="_blank">
+                        supply_chain_demo_mapping.xlsx
+                    </a>
+                </code>
+            </span>
+            <!-- Disclaimer for AI elements, models, and date as instructed -->
+            <span class="footer-disclaimer">
+                Visual representations, layouts, and pre-sales components are AI-enhanced using Gemini 3.5 Flash on 2026-05-27.
+            </span>
         </footer>
 
         <div id="toast-host" aria-live="polite"></div>
 
-        <div
-            id="step-tooltip"
-            class="step-tooltip"
-            role="tooltip"
-            aria-hidden="true"
-        ></div>
+        <div id="step-tooltip" class="step-tooltip" role="tooltip" aria-hidden="true"></div>
 
         <script src="/static/app.js" type="module"></script>
     </body>
