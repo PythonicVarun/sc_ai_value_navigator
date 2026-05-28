@@ -1,0 +1,1140 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Admin · Demo Mapping Console</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+        <!-- Bootstrap the theme before any paint so there's no flash -->
+        <script>
+            (function () {
+                try {
+                    const t = localStorage.getItem("theme.v1");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        t === "dark" ? "dark" : "light",
+                    );
+                } catch (_) {
+                    document.documentElement.setAttribute("data-theme", "light");
+                }
+            })();
+        </script>
+        <style>
+            /* Admin console layout — uses the global tokens from styles.css */
+            body {
+                overflow: auto;
+            }
+
+            .admin-wrap {
+                max-width: 1080px;
+                margin: 28px auto 64px;
+                padding: 0 28px;
+                display: flex;
+                flex-direction: column;
+                gap: 18px;
+            }
+
+            .admin-hero {
+                background: var(--kpi-hero-grad);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-md);
+                padding: 22px 24px;
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 16px;
+                align-items: center;
+            }
+            .admin-hero .eyebrow {
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--accent);
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .admin-hero h1 {
+                margin: 4px 0 2px;
+                font-size: 20px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+                color: var(--text);
+            }
+            .admin-hero p {
+                margin: 0;
+                color: var(--text-mute);
+                font-size: 13px;
+                max-width: 60ch;
+            }
+            .admin-hero .hero-actions {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-sm);
+                padding: 20px 22px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .card-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+            }
+            .card-head .title {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--text);
+                letter-spacing: -0.005em;
+            }
+            .card-head .title .icon {
+                width: 14px;
+                height: 14px;
+                color: var(--accent);
+            }
+            .card-head .sub {
+                margin: 4px 0 0;
+                font-size: 12.5px;
+                color: var(--text-mute);
+                max-width: 70ch;
+            }
+            .card-head .head-actions {
+                display: inline-flex;
+                gap: 6px;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            /* Status card — file meta in a clean key/value grid */
+            .meta-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px 22px;
+                font-size: 13px;
+            }
+            @media (min-width: 720px) {
+                .meta-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                }
+            }
+            .meta-grid > div {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                min-width: 0;
+            }
+            .meta-grid dt {
+                margin: 0;
+                font-size: 11px;
+                color: var(--text-mute);
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                font-weight: 500;
+            }
+            .meta-grid dd {
+                margin: 0;
+                color: var(--text);
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12.5px;
+                word-break: break-all;
+            }
+
+            /* Pills (Saved / Failed / Unsaved …) */
+            .pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 3px 10px;
+                border-radius: 999px;
+                font-size: 11.5px;
+                font-weight: 500;
+                border: 1px solid transparent;
+            }
+            .pill.ok {
+                background: var(--green-soft);
+                color: var(--green);
+                border-color: var(--green-border);
+            }
+            .pill.err {
+                background: var(--red-soft);
+                color: var(--red);
+                border-color: var(--red-border);
+            }
+            .pill.warn {
+                background: var(--amber-soft);
+                color: var(--amber);
+                border-color: var(--amber-border);
+            }
+
+            /* Log line */
+            .log {
+                background: var(--surface-2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 10px 12px;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                color: var(--text-soft);
+                white-space: pre-wrap;
+                min-height: 36px;
+                max-height: 240px;
+                overflow: auto;
+            }
+
+            /* Sheet tabs in the editor */
+            .sheet-tabs {
+                display: flex;
+                gap: 4px;
+                flex-wrap: wrap;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 0;
+                margin-bottom: -1px;
+            }
+            .sheet-tab {
+                appearance: none;
+                cursor: pointer;
+                background: transparent;
+                border: 1px solid transparent;
+                border-bottom: 0;
+                color: var(--text-soft);
+                padding: 7px 14px;
+                border-top-left-radius: var(--radius);
+                border-top-right-radius: var(--radius);
+                font: inherit;
+                font-size: 12.5px;
+                font-weight: 500;
+                position: relative;
+                top: 1px;
+                transition:
+                    color 0.12s,
+                    background 0.12s,
+                    border-color 0.12s;
+            }
+            .sheet-tab:hover {
+                color: var(--text);
+                background: var(--surface-2);
+            }
+            .sheet-tab.active {
+                color: var(--text);
+                background: var(--surface);
+                border-color: var(--border);
+                border-bottom: 1px solid var(--surface);
+                font-weight: 600;
+            }
+
+            /* Editor toolbar */
+            .editor-toolbar {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .editor-toolbar .spacer {
+                flex: 1 1 auto;
+            }
+
+            /* Editor table */
+            .editor-wrap {
+                max-height: 480px;
+                overflow: auto;
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                background: var(--surface);
+            }
+            .editor-table {
+                border-collapse: separate;
+                border-spacing: 0;
+                width: 100%;
+                font-size: 12.5px;
+            }
+            .editor-table thead th {
+                position: sticky;
+                top: 0;
+                background: var(--surface-2);
+                border-bottom: 1px solid var(--border);
+                padding: 8px 10px;
+                text-align: left;
+                font-weight: 600;
+                color: var(--text);
+                white-space: nowrap;
+                font-size: 11.5px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                z-index: 1;
+            }
+            .editor-table th.row-act,
+            .editor-table td.row-act {
+                width: 42px;
+                text-align: center;
+                position: sticky;
+                left: 0;
+                background: var(--surface-2);
+                z-index: 2;
+                border-right: 1px solid var(--border);
+            }
+            .editor-table tbody td.row-act {
+                background: var(--surface);
+            }
+            .editor-table tbody tr:hover td.row-act {
+                background: var(--surface-2);
+            }
+            .editor-table tbody tr:nth-child(even) td:not(.row-act) {
+                background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+            }
+            .editor-table td {
+                border-bottom: 1px solid var(--border);
+                padding: 0;
+                vertical-align: top;
+            }
+            .editor-table td input,
+            .editor-table td textarea {
+                width: 100%;
+                border: 0;
+                background: transparent;
+                color: var(--text);
+                padding: 8px 10px;
+                font: inherit;
+                outline: 0;
+                resize: vertical;
+                min-height: 32px;
+            }
+            .editor-table td textarea {
+                line-height: 1.4;
+            }
+            .editor-table td input:focus,
+            .editor-table td textarea:focus {
+                background: var(--accent-soft);
+                box-shadow: inset 0 0 0 1px var(--accent-soft-2);
+            }
+            .editor-table tbody tr.dirty td:not(.row-act) {
+                box-shadow: inset 2px 0 0 var(--accent);
+            }
+            .editor-empty {
+                padding: 28px;
+                text-align: center;
+                color: var(--text-mute);
+                font-size: 13px;
+            }
+
+            .del-row {
+                background: transparent;
+                border: 0;
+                color: var(--text-mute);
+                cursor: pointer;
+                line-height: 0;
+                padding: 5px;
+                border-radius: 6px;
+                transition:
+                    color 0.12s,
+                    background 0.12s;
+            }
+            .del-row:hover {
+                color: var(--red);
+                background: var(--red-soft);
+            }
+
+            /* Drop zone */
+            .drop {
+                border: 1.5px dashed var(--border-strong);
+                border-radius: var(--radius);
+                background: var(--surface-2);
+                padding: 22px 18px;
+                text-align: center;
+                color: var(--text-soft);
+                cursor: pointer;
+                display: block;
+                transition:
+                    background 0.15s,
+                    border-color 0.15s,
+                    color 0.15s;
+            }
+            .drop:hover {
+                border-color: var(--accent-soft-2);
+                background: var(--accent-soft);
+                color: var(--text);
+            }
+            .drop.drag {
+                background: var(--accent-soft);
+                border-color: var(--accent);
+                color: var(--text);
+            }
+            .drop .drop-icon {
+                width: 26px;
+                height: 26px;
+                color: var(--accent);
+                margin: 0 auto 6px;
+                display: block;
+            }
+            .drop .drop-title {
+                font-weight: 600;
+                color: var(--text);
+                font-size: 13px;
+            }
+            .drop .drop-sub {
+                font-size: 12px;
+                color: var(--text-mute);
+                margin-top: 2px;
+            }
+            .drop .file-chip {
+                margin-top: 10px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 11.5px;
+                color: var(--text);
+            }
+            .drop input[type="file"] {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                opacity: 0;
+                pointer-events: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <header class="topbar">
+            <div class="brand">
+                <div class="logo-mark" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <path
+                            d="M4 22 L10 12 L16 18 L22 8 L28 16"
+                            stroke="#F26A2E"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <circle cx="10" cy="12" r="2" fill="#F26A2E" />
+                        <circle cx="22" cy="8" r="2" fill="#1F2933" />
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title">
+                        Supply Chain AI Value Navigator
+                    </div>
+                    <div class="brand-subtitle">
+                        Admin console · Demo mapping workbook
+                    </div>
+                </div>
+            </div>
+            <nav class="tabs" role="tablist" aria-label="Admin sections">
+                <button
+                    class="tab active"
+                    data-jump="status-card"
+                    role="tab"
+                    aria-selected="true"
+                    type="button"
+                >
+                    <span class="tab-num">01</span>
+                    <span class="tab-label">Workbook</span>
+                </button>
+                <button
+                    class="tab"
+                    data-jump="editor-card"
+                    role="tab"
+                    aria-selected="false"
+                    type="button"
+                >
+                    <span class="tab-num">02</span>
+                    <span class="tab-label">Edit in browser</span>
+                </button>
+                <button
+                    class="tab"
+                    data-jump="upload-card"
+                    role="tab"
+                    aria-selected="false"
+                    type="button"
+                >
+                    <span class="tab-num">03</span>
+                    <span class="tab-label">Replace</span>
+                </button>
+            </nav>
+            <div class="topbar-meta">
+                <a
+                    class="btn btn-ghost"
+                    href="/"
+                    title="Back to app"
+                    style="padding: 6px 12px; font-size: 12.5px; text-decoration: none;"
+                    >Back to app</a
+                >
+                <button
+                    id="theme-toggle"
+                    class="theme-toggle"
+                    type="button"
+                    title="Switch theme"
+                    aria-label="Switch theme"
+                ></button>
+                <div id="status-pill" class="status-pill status-loading">
+                    <span class="status-dot"></span
+                    ><span id="status-text">Loading…</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-wrap">
+            <!-- Hero -->
+            <section class="admin-hero">
+                <div>
+                    <div class="eyebrow" id="hero-eyebrow">
+                        <span data-aicon="shieldCheck"></span>
+                        Authenticated session
+                    </div>
+                    <h1>Demo mapping console</h1>
+                    <p>
+                        Replace or edit the workbook that drives the value-chain
+                        map and the opportunity calculator. Saves take effect
+                        immediately for the live app and persist across
+                        restarts. A <code>.bak</code> of the previous file is
+                        kept next to it on disk.
+                    </p>
+                </div>
+                <div class="hero-actions">
+                    <button
+                        class="btn btn-ghost btn-icon"
+                        id="refresh-btn"
+                        title="Refresh workbook status"
+                        aria-label="Refresh"
+                        type="button"
+                        data-aicon-btn="refresh"
+                    ></button>
+                    <a
+                        class="btn btn-primary"
+                        id="download-btn"
+                        href=""
+                        download
+                    >
+                        <span data-aicon="download"></span>
+                        Download
+                    </a>
+                </div>
+            </section>
+
+            <!-- Workbook status -->
+            <section class="card" id="status-card">
+                <div class="card-head">
+                    <div>
+                        <div class="title">
+                            <span data-aicon="fileText"></span> Current workbook
+                        </div>
+                        <p class="sub">
+                            The live app reads this file on every request — no
+                            restart needed when you save.
+                        </p>
+                    </div>
+                </div>
+                <dl class="meta-grid" id="meta">
+                    <div><dt>Filename</dt><dd id="m-name">—</dd></div>
+                    <div><dt>Active sheet</dt><dd id="m-sheet">—</dd></div>
+                    <div><dt>Rows</dt><dd id="m-rows">—</dd></div>
+                    <div><dt>Size</dt><dd id="m-size">—</dd></div>
+                    <div style="grid-column: 1 / -1">
+                        <dt>Last modified</dt>
+                        <dd id="m-mtime">—</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <!-- In-browser editor -->
+            <section class="card" id="editor-card">
+                <div class="card-head">
+                    <div>
+                        <div class="title">
+                            <span data-aicon="edit"></span> Edit in browser
+                        </div>
+                        <p class="sub">
+                            Edit cells directly, add or remove rows, then save
+                            changes to the workbook on disk.
+                        </p>
+                    </div>
+                    <div class="head-actions">
+                        <span id="dirty-pill"></span>
+                        <span id="save-pill"></span>
+                    </div>
+                </div>
+
+                <div class="sheet-tabs" id="editor-tabs" role="tablist"></div>
+
+                <div class="editor-toolbar">
+                    <button
+                        class="btn btn-ghost"
+                        id="add-row-btn"
+                        type="button"
+                        style="padding: 6px 12px; font-size: 12.5px"
+                    >
+                        <span data-aicon="plus"></span> Add row
+                    </button>
+                    <button
+                        class="btn btn-ghost"
+                        id="reload-data-btn"
+                        type="button"
+                        style="padding: 6px 12px; font-size: 12.5px"
+                    >
+                        <span data-aicon="refresh"></span> Reload from disk
+                    </button>
+                    <span class="spacer"></span>
+                    <button
+                        class="btn btn-primary"
+                        id="save-edits-btn"
+                        type="button"
+                        disabled
+                        style="padding: 6px 14px; font-size: 12.5px"
+                    >
+                        <span data-aicon="check"></span> Save changes
+                    </button>
+                </div>
+
+                <div class="editor-wrap">
+                    <table class="editor-table" id="editor-table">
+                        <thead>
+                            <tr id="editor-head"></tr>
+                        </thead>
+                        <tbody id="editor-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="log" id="edit-log" aria-live="polite">Loading…</div>
+            </section>
+
+            <!-- Replace workbook -->
+            <section class="card" id="upload-card">
+                <div class="card-head">
+                    <div>
+                        <div class="title">
+                            <span data-aicon="upload"></span> Replace workbook
+                        </div>
+                        <p class="sub">
+                            Upload a new <code>.xlsx</code>. It must contain a
+                            <strong>Mapping</strong> sheet (or its first sheet
+                            is treated as one).
+                        </p>
+                    </div>
+                </div>
+                <form id="upload-form">
+                    <label class="drop" id="drop">
+                        <span class="drop-icon" data-aicon="upload" data-aicon-size="26"></span>
+                        <div class="drop-title">
+                            Drag &amp; drop an .xlsx here
+                        </div>
+                        <div class="drop-sub">or click to choose a file</div>
+                        <div
+                            id="file-chip"
+                            class="file-chip"
+                            style="display: none"
+                        ></div>
+                        <input
+                            id="file"
+                            name="file"
+                            type="file"
+                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            required
+                        />
+                    </label>
+                    <div
+                        class="editor-toolbar"
+                        style="margin-top: 12px"
+                    >
+                        <span class="spacer"></span>
+                        <span id="upload-pill"></span>
+                        <button
+                            class="btn btn-primary"
+                            id="submit-btn"
+                            type="submit"
+                            disabled
+                            style="padding: 6px 14px; font-size: 12.5px"
+                        >
+                            <span data-aicon="upload"></span>
+                            Upload &amp; replace
+                        </button>
+                    </div>
+                </form>
+                <div class="log" id="upload-log" aria-live="polite">Ready.</div>
+            </section>
+        </div>
+
+        <script>
+            // -- Inline icon set (subset of the main app's Lucide-style pack) --
+            const ICONS = {
+                fileText:
+                    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+                edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+                upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+                download:
+                    '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+                refresh:
+                    '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+                plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+                check: '<polyline points="20 6 9 17 4 12"/>',
+                trash:
+                    '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
+                shieldCheck:
+                    '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
+                sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>',
+                moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+            };
+            function iconHTML(name, size = 14) {
+                const inner = ICONS[name] || "";
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+            }
+            // Decorate static icons in the markup
+            document.querySelectorAll("[data-aicon]").forEach((el) => {
+                const size = parseInt(el.dataset.aiconSize || "14", 10);
+                el.classList.add("icon");
+                el.innerHTML = iconHTML(el.dataset.aicon, size);
+            });
+            document.querySelectorAll("[data-aicon-btn]").forEach((el) => {
+                el.innerHTML = iconHTML(el.dataset.aiconBtn, 14);
+            });
+
+            // -- Theme toggle (mirrors the main app's behaviour) --
+            (function setupThemeToggle() {
+                const btn = document.getElementById("theme-toggle");
+                const paint = () => {
+                    const isDark =
+                        document.documentElement.getAttribute("data-theme") ===
+                        "dark";
+                    btn.innerHTML = iconHTML(isDark ? "sun" : "moon", 15);
+                    btn.title = isDark
+                        ? "Switch to light theme"
+                        : "Switch to dark theme";
+                    btn.setAttribute("aria-label", btn.title);
+                };
+                btn.addEventListener("click", () => {
+                    const cur =
+                        document.documentElement.getAttribute("data-theme") ||
+                        "light";
+                    const next = cur === "dark" ? "light" : "dark";
+                    document.documentElement.setAttribute("data-theme", next);
+                    try {
+                        localStorage.setItem("theme.v1", next);
+                    } catch (_) {
+                        /* ignore */
+                    }
+                    paint();
+                });
+                paint();
+            })();
+
+            // -- Top-nav "jump to section" buttons + scroll-spy --
+            (function setupNavTabs() {
+                const tabs = Array.from(document.querySelectorAll(".tab[data-jump]"));
+                tabs.forEach((tab) => {
+                    tab.addEventListener("click", () => {
+                        const target = document.getElementById(tab.dataset.jump);
+                        if (!target) return;
+                        target.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                        });
+                    });
+                });
+                // Highlight whichever section is currently near the top
+                const sections = tabs
+                    .map((t) => ({
+                        tab: t,
+                        el: document.getElementById(t.dataset.jump),
+                    }))
+                    .filter((s) => s.el);
+                const obs = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((e) => {
+                            if (!e.isIntersecting) return;
+                            sections.forEach((s) => {
+                                const on = s.el === e.target;
+                                s.tab.classList.toggle("active", on);
+                                s.tab.setAttribute(
+                                    "aria-selected",
+                                    on ? "true" : "false",
+                                );
+                            });
+                        });
+                    },
+                    { rootMargin: "-30% 0px -60% 0px", threshold: 0 },
+                );
+                sections.forEach((s) => obs.observe(s.el));
+            })();
+
+            // -- Shared helpers --
+            const BASE = location.pathname.replace(/\/+$/, "");
+            const $ = (id) => document.getElementById(id);
+
+            function setPill(elId, kind, msg) {
+                const el = $(elId);
+                if (!kind) {
+                    el.textContent = "";
+                    el.className = "";
+                    return;
+                }
+                el.className = "pill " + kind;
+                el.textContent = msg;
+            }
+
+            function setStatusPill(kind, text) {
+                const p = $("status-pill");
+                p.classList.remove(
+                    "status-loading",
+                    "status-ready",
+                    "status-manual",
+                    "status-error",
+                );
+                p.classList.add("status-" + kind);
+                $("status-text").textContent = text;
+            }
+
+            // -- Status card --
+            async function loadStatus() {
+                setStatusPill("loading", "Loading…");
+                try {
+                    const res = await fetch(BASE + "/status", {
+                        credentials: "same-origin",
+                    });
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    const j = await res.json();
+                    $("m-name").textContent = j.filename || "—";
+                    $("m-sheet").textContent = j.sheet || "—";
+                    $("m-rows").textContent = j.row_count ?? "—";
+                    $("m-size").textContent =
+                        j.size_bytes != null
+                            ? j.size_bytes.toLocaleString() + " bytes"
+                            : "—";
+                    $("m-mtime").textContent = j.modified_iso || "—";
+                    $("download-btn").href = BASE + "/download";
+                    setStatusPill(
+                        j.present ? "ready" : "error",
+                        j.present
+                            ? "Workbook loaded · " + (j.row_count ?? "?") + " rows"
+                            : "Workbook missing",
+                    );
+                } catch (e) {
+                    setStatusPill("error", "Failed");
+                }
+            }
+
+            // -- Upload card --
+            (function setupUpload() {
+                const drop = $("drop"),
+                    file = $("file"),
+                    submit = $("submit-btn"),
+                    chip = $("file-chip");
+
+                function updateChip() {
+                    if (file.files.length) {
+                        chip.style.display = "inline-flex";
+                        chip.textContent =
+                            file.files[0].name +
+                            " · " +
+                            file.files[0].size.toLocaleString() +
+                            " B";
+                        submit.disabled = false;
+                    } else {
+                        chip.style.display = "none";
+                        submit.disabled = true;
+                    }
+                }
+                file.addEventListener("change", updateChip);
+
+                ["dragenter", "dragover"].forEach((ev) =>
+                    drop.addEventListener(ev, (e) => {
+                        e.preventDefault();
+                        drop.classList.add("drag");
+                    }),
+                );
+                ["dragleave", "drop"].forEach((ev) =>
+                    drop.addEventListener(ev, (e) => {
+                        e.preventDefault();
+                        drop.classList.remove("drag");
+                    }),
+                );
+                drop.addEventListener("drop", (e) => {
+                    if (e.dataTransfer.files && e.dataTransfer.files.length) {
+                        file.files = e.dataTransfer.files;
+                        updateChip();
+                    }
+                });
+
+                $("upload-form").addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    if (!file.files.length) return;
+                    submit.disabled = true;
+                    setPill("upload-pill", null);
+                    $("upload-log").textContent =
+                        "Uploading " +
+                        file.files[0].name +
+                        " (" +
+                        file.files[0].size.toLocaleString() +
+                        " bytes)…";
+                    const fd = new FormData();
+                    fd.append("file", file.files[0]);
+                    try {
+                        const res = await fetch(BASE + "/upload", {
+                            method: "POST",
+                            body: fd,
+                            credentials: "same-origin",
+                        });
+                        const j = await res.json().catch(() => ({}));
+                        if (!res.ok || !j.ok) {
+                            setPill("upload-pill", "err", "Failed");
+                            $("upload-log").textContent =
+                                "Upload rejected: " +
+                                (j.detail || j.error || "HTTP " + res.status);
+                        } else {
+                            setPill("upload-pill", "ok", "Replaced");
+                            $("upload-log").textContent =
+                                "OK. Workbook replaced. Sheet: " +
+                                j.sheet +
+                                ". Rows: " +
+                                j.row_count +
+                                ". Backup: " +
+                                (j.backup || "(none)");
+                            await loadStatus();
+                            await loadData();
+                            file.value = "";
+                            updateChip();
+                        }
+                    } catch (err) {
+                        setPill("upload-pill", "err", "Failed");
+                        $("upload-log").textContent = "Network error: " + err;
+                    } finally {
+                        submit.disabled = !file.files.length;
+                    }
+                });
+            })();
+
+            // -- In-browser editor --
+            const state = { sheets: {}, names: [], active: null, dirty: false };
+            const elog = (msg) => {
+                $("edit-log").textContent = msg;
+            };
+            const setDirty = (v) => {
+                state.dirty = v;
+                if (v) {
+                    setPill("dirty-pill", "warn", "Unsaved changes");
+                } else {
+                    setPill("dirty-pill", null);
+                }
+                $("save-edits-btn").disabled = !v;
+            };
+
+            function renderTabs() {
+                const host = $("editor-tabs");
+                host.innerHTML = "";
+                state.names.forEach((name) => {
+                    const b = document.createElement("button");
+                    b.type = "button";
+                    b.className =
+                        "sheet-tab" + (name === state.active ? " active" : "");
+                    const sheet = state.sheets[name];
+                    const count = sheet ? sheet.rows.length : 0;
+                    b.innerHTML =
+                        name +
+                        ' <span style="color:var(--text-mute);font-weight:500">· ' +
+                        count +
+                        "</span>";
+                    b.addEventListener("click", () => {
+                        state.active = name;
+                        renderTabs();
+                        renderTable();
+                    });
+                    host.appendChild(b);
+                });
+            }
+
+            function renderTable() {
+                const sheet = state.sheets[state.active];
+                const head = $("editor-head");
+                const body = $("editor-body");
+                head.innerHTML = "";
+                body.innerHTML = "";
+                if (!sheet) {
+                    body.innerHTML =
+                        '<tr><td class="editor-empty" colspan="99">No sheet selected.</td></tr>';
+                    return;
+                }
+                const act = document.createElement("th");
+                act.className = "row-act";
+                head.appendChild(act);
+                sheet.columns.forEach((c) => {
+                    const th = document.createElement("th");
+                    th.textContent = c;
+                    head.appendChild(th);
+                });
+                if (!sheet.rows.length) {
+                    body.innerHTML =
+                        '<tr><td class="editor-empty" colspan="' +
+                        (sheet.columns.length + 1) +
+                        '">Empty sheet. Click <strong>Add row</strong> to get started.</td></tr>';
+                    return;
+                }
+                sheet.rows.forEach((row, ri) => {
+                    const tr = document.createElement("tr");
+                    const td0 = document.createElement("td");
+                    td0.className = "row-act";
+                    const del = document.createElement("button");
+                    del.type = "button";
+                    del.className = "del-row";
+                    del.title = "Delete row";
+                    del.innerHTML = iconHTML("trash", 14);
+                    del.addEventListener("click", () => {
+                        sheet.rows.splice(ri, 1);
+                        setDirty(true);
+                        renderTable();
+                        renderTabs();
+                    });
+                    td0.appendChild(del);
+                    tr.appendChild(td0);
+
+                    sheet.columns.forEach((_c, ci) => {
+                        const td = document.createElement("td");
+                        const value = row[ci] == null ? "" : String(row[ci]);
+                        const long =
+                            value.length > 60 || value.includes("\n");
+                        const input = document.createElement(
+                            long ? "textarea" : "input",
+                        );
+                        if (!long) input.type = "text";
+                        input.value = value;
+                        input.addEventListener("input", () => {
+                            row[ci] = input.value;
+                            tr.classList.add("dirty");
+                            setDirty(true);
+                        });
+                        td.appendChild(input);
+                        tr.appendChild(td);
+                    });
+                    body.appendChild(tr);
+                });
+            }
+
+            async function loadData() {
+                elog("Loading workbook…");
+                setPill("save-pill", null);
+                try {
+                    const res = await fetch(BASE + "/data", {
+                        credentials: "same-origin",
+                    });
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    const j = await res.json();
+                    state.names = j.sheet_names || [];
+                    state.sheets = j.sheets || {};
+                    state.active = state.names[0] || null;
+                    setDirty(false);
+                    renderTabs();
+                    renderTable();
+                    const total = state.names.reduce(
+                        (n, k) => n + (state.sheets[k]?.rows.length || 0),
+                        0,
+                    );
+                    elog(
+                        "Loaded " +
+                            state.names.length +
+                            " sheet(s), " +
+                            total +
+                            " total rows.",
+                    );
+                } catch (e) {
+                    elog("Failed to load workbook: " + e);
+                }
+            }
+
+            $("add-row-btn").addEventListener("click", () => {
+                const sheet = state.sheets[state.active];
+                if (!sheet) return;
+                sheet.rows.push(sheet.columns.map(() => ""));
+                setDirty(true);
+                renderTable();
+                renderTabs();
+                const w = $("editor-table").parentElement;
+                w.scrollTop = w.scrollHeight;
+            });
+
+            $("reload-data-btn").addEventListener("click", () => {
+                if (
+                    state.dirty &&
+                    !confirm(
+                        "Discard unsaved changes and reload from disk?",
+                    )
+                )
+                    return;
+                loadData();
+            });
+
+            $("save-edits-btn").addEventListener("click", async () => {
+                if (!state.dirty) return;
+                const btn = $("save-edits-btn");
+                btn.disabled = true;
+                setPill("save-pill", null);
+                elog("Saving…");
+                const payload = { sheets: {} };
+                state.names.forEach((n) => {
+                    if (state.sheets[n]) payload.sheets[n] = state.sheets[n];
+                });
+                try {
+                    const res = await fetch(BASE + "/save", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                        credentials: "same-origin",
+                    });
+                    const j = await res.json().catch(() => ({}));
+                    if (!res.ok || !j.ok) {
+                        setPill("save-pill", "err", "Failed");
+                        elog(
+                            "Save rejected: " +
+                                (j.detail || j.error || "HTTP " + res.status),
+                        );
+                        btn.disabled = false;
+                        return;
+                    }
+                    setPill("save-pill", "ok", "Saved");
+                    elog(
+                        "Saved. " +
+                            j.sheet_count +
+                            " sheet(s), " +
+                            j.row_count +
+                            " rows. Backup: " +
+                            (j.backup || "(none)"),
+                    );
+                    setDirty(false);
+                    document
+                        .querySelectorAll("#editor-body tr.dirty")
+                        .forEach((tr) => tr.classList.remove("dirty"));
+                    loadStatus();
+                } catch (err) {
+                    setPill("save-pill", "err", "Failed");
+                    elog("Network error: " + err);
+                    btn.disabled = false;
+                }
+            });
+
+            $("refresh-btn").addEventListener("click", loadStatus);
+
+            // Initial paint
+            loadStatus();
+            loadData();
+        </script>
+    </body>
+</html>
