@@ -322,6 +322,19 @@ def admin_status(
             info["sheet_names"] = xl.sheet_names
     except Exception as e:
         info["read_error"] = str(e)
+
+    backup_path = EXCEL_PATH.with_suffix(EXCEL_PATH.suffix + ".bak")
+    if backup_path.exists():
+        bstat = backup_path.stat()
+        info["backup"] = {
+            "filename": backup_path.name,
+            "size_bytes": bstat.st_size,
+            "modified_iso": pd.Timestamp(bstat.st_mtime, unit="s", tz="UTC")
+            .tz_convert("UTC")
+            .isoformat(),
+        }
+    else:
+        info["backup"] = None
     return info
 
 
@@ -336,6 +349,26 @@ def admin_download(
         EXCEL_PATH,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         filename=EXCEL_PATH.name,
+    )
+
+
+@app.get("/admin/{slug}/download-backup", include_in_schema=False)
+def admin_download_backup(
+    slug: str, credentials: Optional[HTTPBasicCredentials] = Depends(_basic)
+) -> FileResponse:
+    """Download the most recent .bak (the workbook as it was before the last save/upload)."""
+    _admin_guard(slug, credentials)
+    backup_path = EXCEL_PATH.with_suffix(EXCEL_PATH.suffix + ".bak")
+    if not backup_path.exists():
+        raise HTTPException(status_code=404, detail="No backup available.")
+    # Serve under a friendly name like `supply_chain_demo_mapping.previous.xlsx`
+    download_name = (
+        EXCEL_PATH.stem + ".previous" + EXCEL_PATH.suffix
+    )
+    return FileResponse(
+        backup_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename=download_name,
     )
 
 
