@@ -1965,9 +1965,13 @@ function setupPane({
         ? Math.max(minW, Math.min(maxW, +saved.w))
         : defaultW;
     let collapsed =
-        "collapsed" in saved ? !!saved.collapsed : !!defaultCollapsed;
+        side === "left"
+            ? true
+            : "collapsed" in saved
+              ? !!saved.collapsed
+              : !!defaultCollapsed;
 
-    const collapsedW = 40;
+    const collapsedW = side === "left" ? 0 : 40;
 
     // Chevron direction: pointing to where the pane will move when clicked.
     // Open sidebar → chevronLeft (will collapse leftward). Collapsed → chevronRight.
@@ -1980,6 +1984,15 @@ function setupPane({
     // so it's never clipped by the pane's overflow:auto and never overlaps form controls.
     const header = document.createElement("div");
     header.className = `pane-header pane-header-${side}`;
+
+    if (side === "right") {
+        const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+        const modifier = isMac ? "⌘" : "Ctrl";
+        const hint = document.createElement("span");
+        hint.className = "shortcut-hint";
+        hint.innerHTML = `<kbd>${modifier}</kbd>+<kbd>B</kbd> to toggle`;
+        header.appendChild(hint);
+    }
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -2006,7 +2019,14 @@ function setupPane({
             collapsed ? `${collapsedW}px` : `${width}px`,
         );
         paneEl.classList.toggle("pane-collapsed", collapsed);
-        toggle.title = collapsed ? "Expand panel" : "Collapse panel";
+
+        let titleText = collapsed ? "Expand panel" : "Collapse panel";
+        if (side === "right") {
+            const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+            const modifier = isMac ? "⌘B" : "Ctrl+B";
+            titleText += ` (${modifier})`;
+        }
+        toggle.title = titleText;
         toggle.setAttribute("aria-label", toggle.title);
         toggle.innerHTML = iconHTML(arrowIcon(), 13);
     };
@@ -2460,21 +2480,21 @@ function renderMap() {
                         el("div", { class: "step-counts" }, [
                             demoCount
                                 ? el("span", {
-                                    class: "count-chip has-demo",
-                                    text: `${demoCount} demo${demoCount > 1 ? "s" : ""}`,
-                                })
+                                      class: "count-chip has-demo",
+                                      text: `${demoCount} demo${demoCount > 1 ? "s" : ""}`,
+                                  })
                                 : null,
                             caseCount
                                 ? el("span", {
-                                    class: "count-chip has-case",
-                                    text: `${caseCount} case${caseCount > 1 ? "s" : ""}`,
-                                })
+                                      class: "count-chip has-case",
+                                      text: `${caseCount} case${caseCount > 1 ? "s" : ""}`,
+                                  })
                                 : null,
                             !demoCount && !caseCount
                                 ? el("span", {
-                                    class: "count-chip",
-                                    text: "no assets",
-                                })
+                                      class: "count-chip",
+                                      text: "no assets",
+                                  })
                                 : null,
                         ]),
                         dots,
@@ -2525,11 +2545,7 @@ function _ensureStepTooltip() {
             _hideStepTooltipSoon(0);
         });
         // Hide on scroll / resize so it never floats over the wrong card.
-        window.addEventListener(
-            "scroll",
-            () => _hideStepTooltipNow(),
-            true,
-        );
+        window.addEventListener("scroll", () => _hideStepTooltipNow(), true);
         window.addEventListener("resize", () => _hideStepTooltipNow());
     }
     return _stepTooltipEl;
@@ -2571,15 +2587,14 @@ function _buildStepTooltipContent(stepLabel) {
             el("div", { class: "tt-section" }, [
                 el("div", {
                     class: "tt-head",
-                    html:
-                        iconHTML("tag", 11) + `<span>Horizontal tags</span>`,
+                    html: iconHTML("tag", 11) + `<span>Horizontal tags</span>`,
                 }),
                 el(
                     "div",
                     { class: "tt-tags" },
-                    [...tagSet].map((t) =>
-                        el("span", { class: "tt-chip", text: t }),
-                    ),
+                    [...tagSet]
+                        .slice(0, 5)
+                        .map((t) => el("span", { class: "tt-chip", text: t })),
                 ),
             ]),
         );
@@ -2658,10 +2673,7 @@ function _positionStepTooltip(tt, anchor) {
         left = r.left - ttW - margin;
     }
     if (left < pad) {
-        left = Math.min(
-            window.innerWidth - ttW - pad,
-            Math.max(pad, r.left),
-        );
+        left = Math.min(window.innerWidth - ttW - pad, Math.max(pad, r.left));
         top = r.bottom + margin;
     }
     if (top + ttH > window.innerHeight - pad) {
@@ -2718,7 +2730,10 @@ function clearSelectedStep() {
 function selectStep(label) {
     const detailPane = $("#detail-pane");
     const wasAlreadySelected = state.selectedStep === label;
-    const shouldCollapse = wasAlreadySelected && detailPane && !detailPane.classList.contains("pane-collapsed");
+    const shouldCollapse =
+        wasAlreadySelected &&
+        detailPane &&
+        !detailPane.classList.contains("pane-collapsed");
 
     state.selectedStep = wasAlreadySelected ? null : label;
     $$(".step-card").forEach((c) =>
@@ -2743,11 +2758,19 @@ function selectStep(label) {
 function wireDetailPaneCollapseSync() {
     const detailPane = $("#detail-pane");
     const toggleBtn = detailPane?.querySelector(".pane-toggle");
-    if (!detailPane || !toggleBtn || toggleBtn.dataset.selectionSyncBound === "1") return;
+    if (
+        !detailPane ||
+        !toggleBtn ||
+        toggleBtn.dataset.selectionSyncBound === "1"
+    )
+        return;
 
     toggleBtn.dataset.selectionSyncBound = "1";
     toggleBtn.addEventListener("click", () => {
-        if (detailPane.classList.contains("pane-collapsed") && state.selectedStep) {
+        if (
+            detailPane.classList.contains("pane-collapsed") &&
+            state.selectedStep
+        ) {
             clearSelectedStep();
         }
     });
@@ -2822,8 +2845,8 @@ function renderDetail() {
                         tier === "high"
                             ? "target"
                             : tier === "med"
-                                ? "flag"
-                                : "info",
+                              ? "flag"
+                              : "info",
                         11,
                     ) + `<span>${tierMap[tier]}</span>`,
             }),
@@ -2851,34 +2874,6 @@ function renderDetail() {
             }),
         ),
     );
-
-    // Challenges
-    if (detail.challenges)
-        pane.append(
-            makeSection(
-                "Typical business challenges",
-                "alert",
-                makeList(detail.challenges),
-            ),
-        );
-
-    // Levers
-    if (detail.levers)
-        pane.append(
-            makeSection("AI & data levers", "cpu", makeList(detail.levers)),
-        );
-
-    // KPIs
-    if (detail.kpis)
-        pane.append(
-            makeSection("Relevant KPIs", "barChart", makeList(detail.kpis)),
-        );
-
-    // Data
-    if (detail.data)
-        pane.append(
-            makeSection("Required data", "database", makeList(detail.data)),
-        );
 
     // Proof points from Excel
     const rows = rowsForStep(step);
@@ -2921,6 +2916,56 @@ function renderDetail() {
                 makeList(detail.questions),
             ),
         );
+
+    // Collapsible Deep Dive section (Typical business challenges, AI & data levers, Relevant KPIs, Required data)
+    const deepDiveContent = el("div", { class: "deep-dive-content" });
+    let hasDeepDive = false;
+
+    if (detail.challenges) {
+        deepDiveContent.append(
+            makeSection(
+                "Typical business challenges",
+                "alert",
+                makeList(detail.challenges),
+            ),
+        );
+        hasDeepDive = true;
+    }
+    if (detail.levers) {
+        deepDiveContent.append(
+            makeSection("AI & data levers", "cpu", makeList(detail.levers)),
+        );
+        hasDeepDive = true;
+    }
+    if (detail.kpis) {
+        deepDiveContent.append(
+            makeSection("Relevant KPIs", "barChart", makeList(detail.kpis)),
+        );
+        hasDeepDive = true;
+    }
+    if (detail.data) {
+        deepDiveContent.append(
+            makeSection("Required data", "database", makeList(detail.data)),
+        );
+        hasDeepDive = true;
+    }
+
+    if (hasDeepDive) {
+        pane.append(
+            el("details", { class: "detail-section deep-dive-details" }, [
+                el("summary", {
+                    class: "deep-dive-summary",
+                    html:
+                        `<div class="summary-title-wrapper">` +
+                        iconHTML("sliders", 13) +
+                        `<span>Challenges, Levers, KPIs &amp; Data</span>` +
+                        `</div>` +
+                        iconHTML("chevronRight", 11, "summary-chevron"),
+                }),
+                deepDiveContent,
+            ]),
+        );
+    }
 }
 
 function makeSection(title, iconName, content) {
@@ -3085,7 +3130,7 @@ function renderOpportunityStrip() {
                 html:
                     iconHTML(
                         STAGE_ICON[
-                        STEPS.find((s) => s.label === init.vc_step)?.stage
+                            STEPS.find((s) => s.label === init.vc_step)?.stage
                         ] || "chevronRight",
                         11,
                     ) + `<span>${init.vc_step} · ${init.pool}</span>`,
@@ -3110,20 +3155,20 @@ function renderOpportunityStrip() {
             el("div", { class: "init-foot" }, [
                 placeholder
                     ? el("span", {
-                        class: "init-link is-placeholder",
-                        html:
-                            iconHTML("link", 11) +
-                            `<span>Link to be added</span>`,
-                    })
+                          class: "init-link is-placeholder",
+                          html:
+                              iconHTML("link", 11) +
+                              `<span>Link to be added</span>`,
+                      })
                     : el("a", {
-                        class: "init-link",
-                        href: link,
-                        target: "_blank",
-                        rel: "noreferrer",
-                        html:
-                            iconHTML("externalLink", 11) +
-                            `<span>Open proof</span>`,
-                    }),
+                          class: "init-link",
+                          href: link,
+                          target: "_blank",
+                          rel: "noreferrer",
+                          html:
+                              iconHTML("externalLink", 11) +
+                              `<span>Open proof</span>`,
+                      }),
                 el("span", { class: "init-tag", text: init.vc_step }),
             ]),
         ]);
@@ -3176,7 +3221,7 @@ function rankedInitiatives() {
             const speed = { S: 1, M: 0.7, L: 0.45 }[init.effort] || 0.5;
             const dataReady =
                 { Low: 0.4, Developing: 0.6, Medium: 0.8, High: 1.0 }[
-                state.maturity
+                    state.maturity
                 ] || 0.7;
             const proofStrength =
                 ({ demo: 0.7, case: 1.0, accelerator: 0.8, concept: 0.3 }[
@@ -3184,7 +3229,7 @@ function rankedInitiatives() {
                 ] || 0.5) * (hasProof ? 1.1 : 0.9);
             const cross =
                 init.tags?.includes("data") ||
-                    init.vc_step === "Data Foundation"
+                init.vc_step === "Data Foundation"
                     ? 1
                     : 0.6;
 
@@ -3406,7 +3451,7 @@ function computeInitiative(init) {
     // Proof adjustments
     const proofAdj =
         { demo: 0.03, case: 0.05, accelerator: 0.03, concept: -0.05 }[
-        init.proof
+            init.proof
         ] || 0;
 
     const cLow = Math.max(0.1, Math.min(1, confLow + proofAdj));
@@ -3517,20 +3562,20 @@ function renderInitiativeTable() {
             el("td", {}, [
                 placeholder
                     ? el("span", {
-                        class: "asset-link is-placeholder",
-                        html:
-                            iconHTML("link", 11) +
-                            `<span>Link to be added</span>`,
-                    })
+                          class: "asset-link is-placeholder",
+                          html:
+                              iconHTML("link", 11) +
+                              `<span>Link to be added</span>`,
+                      })
                     : el("a", {
-                        class: "asset-link",
-                        href: link,
-                        target: "_blank",
-                        rel: "noreferrer",
-                        html:
-                            iconHTML("externalLink", 11) +
-                            `<span>Open</span>`,
-                    }),
+                          class: "asset-link",
+                          href: link,
+                          target: "_blank",
+                          rel: "noreferrer",
+                          html:
+                              iconHTML("externalLink", 11) +
+                              `<span>Open</span>`,
+                      }),
             ]),
         );
 
@@ -4109,6 +4154,20 @@ function wireEvents() {
             e.preventDefault();
             resetScenario(btn);
         });
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+            e.preventDefault();
+            const activeToggle = document.querySelector(
+                "#tab-map.active > div > .sidebar > .pane-header > .pane-toggle, " +
+                    "#tab-calc.active > div > .sidebar > .pane-header > .pane-toggle",
+            );
+            if (activeToggle) {
+                activeToggle.click();
+            }
+        }
     });
 }
 

@@ -671,25 +671,40 @@ textarea {
 }
 
 /* Collapsed state — pane shrinks to a thin strip with only the toggle visible */
-.sidebar.pane-collapsed,
-.detail-pane.pane-collapsed {
+.sidebar.pane-collapsed {
     padding: 12px 4px !important;
     overflow: hidden;
 }
 
-.sidebar.pane-collapsed > *:not(.pane-header):not(.pane-resizer),
+.detail-pane.pane-collapsed {
+    padding: 0 !important;
+    border-left: none !important;
+    overflow: hidden !important;
+}
+
+.sidebar.pane-collapsed > *:not(.pane-header):not(.pane-resizer) {
+    display: none !important;
+}
+
 .detail-pane.pane-collapsed > *:not(.pane-header):not(.pane-resizer) {
     display: none !important;
 }
 
-.sidebar.pane-collapsed .pane-header,
-.detail-pane.pane-collapsed .pane-header {
+.sidebar.pane-collapsed .pane-header {
     justify-content: center;
     margin: 0;
     padding: 0;
     background: transparent;
     border-bottom: 0;
     height: auto;
+}
+
+.detail-pane.pane-collapsed .pane-header {
+    display: none !important;
+}
+
+.detail-pane.pane-collapsed ~ .pane-resizer-left {
+    display: none !important;
 }
 
 .pane-collapsed .pane-resizer {
@@ -2439,4 +2454,124 @@ textarea {
 
 .step-tooltip .tt-link:hover {
     text-decoration: underline;
+}
+
+/* Collapsible Value Chain Details (Challenges, Levers, KPIs, Data) */
+
+.deep-dive-details {
+    margin-top: 18px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.deep-dive-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    margin: 0;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    list-style: none; /* Hide default marker */
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+/* Hide default marker in Webkit browsers */
+.deep-dive-summary::-webkit-details-marker {
+    display: none;
+}
+
+.deep-dive-summary:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent-soft-2);
+    color: var(--accent-strong);
+}
+
+.deep-dive-summary .summary-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.deep-dive-summary .summary-chevron {
+    transition: transform 0.2s ease;
+    color: var(--text-mute);
+    display: inline-flex;
+}
+
+.deep-dive-summary:hover .summary-chevron {
+    color: var(--accent);
+}
+
+.deep-dive-details[open] .summary-chevron {
+    transform: rotate(90deg);
+}
+
+.deep-dive-details[open] .deep-dive-summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.deep-dive-content {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-bottom-left-radius: var(--radius-sm);
+    border-bottom-right-radius: var(--radius-sm);
+    background: var(--surface);
+    margin-bottom: 10px;
+}
+
+.deep-dive-content .detail-section {
+    margin-top: 0;
+}
+
+.deep-dive-content .detail-section + .detail-section {
+    margin-top: 16px;
+    border-top: 1px dashed var(--border);
+    padding-top: 14px;
+}
+
+/* =====================================================================
+   Keyboard Shortcut Hint
+   ===================================================================== */
+
+.pane-header .shortcut-hint {
+    font-size: 10px;
+    color: var(--text-mute);
+    margin-right: auto;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.85;
+}
+
+.pane-header .shortcut-hint kbd {
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-family: var(--font-mono, monospace);
+    font-size: 9px;
+    color: var(--text-soft);
+}
+
+.sidebar.pane-collapsed .shortcut-hint {
+    display: none !important;
 }
