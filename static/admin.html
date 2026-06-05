@@ -21,11 +21,68 @@
                         t === "dark" ? "dark" : "light",
                     );
                 } catch (_) {
-                    document.documentElement.setAttribute("data-theme", "light");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "light",
+                    );
                 }
             })();
         </script>
         <style>
+            :root {
+                --surface: #ffffff;
+                --surface-2: #fbfcfd;
+                --text: #1f2933;
+                --text-soft: #475569;
+                --text-mute: #64748b;
+                --border: #e2e8f0;
+                --border-strong: #cbd5e1;
+                --accent: #f26a2e;
+                --accent-soft: #fff3ec;
+                --accent-soft-2: #ffe5d2;
+                --green: #16a34a;
+                --green-soft: #e7f7ec;
+                --green-border: #c4eccd;
+                --amber: #f59e0b;
+                --amber-soft: #fef3c7;
+                --amber-border: #f6d99d;
+                --red: #dc2626;
+                --red-soft: #fee2e2;
+                --red-border: #f1bcbc;
+                --radius: 6px;
+                --radius-lg: 10px;
+                --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+                --shadow-md:
+                    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                --kpi-hero-grad: linear-gradient(135deg, #ffffff, #f7f8fa);
+            }
+            [data-theme="dark"] {
+                --surface: #1e293b;
+                --surface-2: #0f172a;
+                --text: #f8fafc;
+                --text-soft: #cbd5e1;
+                --text-mute: #94a3b8;
+                --border: #334155;
+                --border-strong: #475569;
+                --accent: #ff7e47;
+                --accent-soft: #2d1e18;
+                --accent-soft-2: #422619;
+                --green: #22c55e;
+                --green-soft: #142e1b;
+                --green-border: #1e4627;
+                --amber: #eab308;
+                --amber-soft: #2e290e;
+                --amber-border: #443c16;
+                --red: #ef4444;
+                --red-soft: #2e1818;
+                --red-border: #4a2121;
+                --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+                --shadow-md:
+                    0 4px 6px -1px rgba(0, 0, 0, 0.4),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.24);
+                --kpi-hero-grad: linear-gradient(135deg, #1e293b, #0f172a);
+            }
             /* Admin console layout — uses the global tokens from styles.css */
             body {
                 overflow: auto;
@@ -340,7 +397,11 @@
                 background: var(--surface-2);
             }
             .editor-table tbody tr:nth-child(even) td:not(.row-act) {
-                background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+                background: color-mix(
+                    in srgb,
+                    var(--surface-2) 55%,
+                    transparent
+                );
             }
             .editor-table td {
                 border-bottom: 1px solid var(--border);
@@ -522,7 +583,11 @@
                     class="btn btn-ghost"
                     href="/"
                     title="Back to app"
-                    style="padding: 6px 12px; font-size: 12.5px; text-decoration: none;"
+                    style="
+                        padding: 6px 12px;
+                        font-size: 12.5px;
+                        text-decoration: none;
+                    "
                     >Back to app</a
                 >
                 <button
@@ -570,7 +635,7 @@
                         id="download-btn"
                         href=""
                         download
-                        style="text-decoration: none;"
+                        style="text-decoration: none"
                     >
                         <span data-aicon="download"></span>
                         Download
@@ -592,10 +657,22 @@
                     </div>
                 </div>
                 <dl class="meta-grid" id="meta">
-                    <div><dt>Filename</dt><dd id="m-name">—</dd></div>
-                    <div><dt>Active sheet</dt><dd id="m-sheet">—</dd></div>
-                    <div><dt>Rows</dt><dd id="m-rows">—</dd></div>
-                    <div><dt>Size</dt><dd id="m-size">—</dd></div>
+                    <div>
+                        <dt>Filename</dt>
+                        <dd id="m-name">—</dd>
+                    </div>
+                    <div>
+                        <dt>Active sheet</dt>
+                        <dd id="m-sheet">—</dd>
+                    </div>
+                    <div>
+                        <dt>Rows</dt>
+                        <dd id="m-rows">—</dd>
+                    </div>
+                    <div>
+                        <dt>Size</dt>
+                        <dd id="m-size">—</dd>
+                    </div>
                     <div style="grid-column: 1 / -1">
                         <dt>Last modified</dt>
                         <dd id="m-mtime">—</dd>
@@ -623,7 +700,11 @@
                         id="download-backup-btn"
                         href=""
                         download
-                        style="text-decoration: none; padding: 6px 12px; font-size: 12.5px"
+                        style="
+                            text-decoration: none;
+                            padding: 6px 12px;
+                            font-size: 12.5px;
+                        "
                     >
                         <span data-aicon="download"></span>
                         Download backup
@@ -708,7 +789,11 @@
                 </div>
                 <form id="upload-form">
                     <label class="drop" id="drop">
-                        <span class="drop-icon" data-aicon="upload" data-aicon-size="26"></span>
+                        <span
+                            class="drop-icon"
+                            data-aicon="upload"
+                            data-aicon-size="26"
+                        ></span>
                         <div class="drop-title">
                             Drag &amp; drop an .xlsx here
                         </div>
@@ -726,10 +811,7 @@
                             required
                         />
                     </label>
-                    <div
-                        class="editor-toolbar"
-                        style="margin-top: 12px"
-                    >
+                    <div class="editor-toolbar" style="margin-top: 12px">
                         <span class="spacer"></span>
                         <span id="upload-pill"></span>
                         <button
@@ -763,8 +845,7 @@
                 check: '<polyline points="20 6 9 17 4 12"/>',
                 history:
                     '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/><polyline points="12 7 12 12 15 14"/>',
-                trash:
-                    '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
+                trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
                 shieldCheck:
                     '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
                 sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>',
@@ -815,10 +896,14 @@
 
             // -- Top-nav "jump to section" buttons + scroll-spy --
             (function setupNavTabs() {
-                const tabs = Array.from(document.querySelectorAll(".tab[data-jump]"));
+                const tabs = Array.from(
+                    document.querySelectorAll(".tab[data-jump]"),
+                );
                 tabs.forEach((tab) => {
                     tab.addEventListener("click", () => {
-                        const target = document.getElementById(tab.dataset.jump);
+                        const target = document.getElementById(
+                            tab.dataset.jump,
+                        );
                         if (!target) return;
                         target.scrollIntoView({
                             behavior: "smooth",
@@ -937,7 +1022,9 @@
                     setStatusPill(
                         j.present ? "ready" : "error",
                         j.present
-                            ? "Workbook loaded · " + (j.row_count ?? "?") + " rows"
+                            ? "Workbook loaded · " +
+                                  (j.row_count ?? "?") +
+                                  " rows"
                             : "Workbook missing",
                     );
                 } catch (e) {
@@ -1121,8 +1208,7 @@
                     sheet.columns.forEach((_c, ci) => {
                         const td = document.createElement("td");
                         const value = row[ci] == null ? "" : String(row[ci]);
-                        const long =
-                            value.length > 60 || value.includes("\n");
+                        const long = value.length > 60 || value.includes("\n");
                         const input = document.createElement(
                             long ? "textarea" : "input",
                         );
@@ -1185,9 +1271,7 @@
             $("reload-data-btn").addEventListener("click", () => {
                 if (
                     state.dirty &&
-                    !confirm(
-                        "Discard unsaved changes and reload from disk?",
-                    )
+                    !confirm("Discard unsaved changes and reload from disk?")
                 )
                     return;
                 loadData();

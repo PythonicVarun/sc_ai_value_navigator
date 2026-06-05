@@ -58,24 +58,119 @@ SUPPORTED_ARCHETYPES = [
 ]
 
 UNIVERSAL_STEPS = [
-    "Demand Sensing",
-    "Demand & Supply Plan",
-    "Inventory & Safety Stock",
-    "Supplier Readiness",
-    "Inbound Receipt & Quality",
-    "Production Plan",
-    "Line Execution",
-    "Warehouse Receipt",
-    "Inventory Visibility",
-    "Allocate & Pick",
-    "Load & Dispatch",
-    "Route & Delivery Execution",
-    "Customer Order & Promise",
-    "Customer Service & Claims",
-    "Pricing & Trade",
-    "Revenue / Network Optimization",
-    "Data Foundation",
+    "Plan & Simulate",
+    "Source & Procure",
+    "Make & Package",
+    "Store & Fulfill",
+    "Deliver & Transport",
+    "Trade, Compliance & Documents",
+    "Control Tower & Governance",
 ]
+
+SUPPORTED_INDUSTRIES = [
+    "Healthcare & Life Sciences",
+    "Consumer packaged goods / beverages",
+    "Retail",
+    "Logistics / Supply Chain",
+    "Manufacturing",
+    "Automotive",
+    "Technology",
+    "Energy / Utilities",
+    "Other",
+]
+
+SUPPORTED_OBJECTIVES = [
+    "Cost to serve reduction",
+    "Service level improvement",
+    "Working capital reduction",
+    "Yield improvement",
+    "Revenue growth",
+    "Compliance / leakage reduction",
+    "Data modernization",
+    "Sustainability / carbon reduction",
+]
+
+
+ARCHETYPE_STAGE_MAPPING = {
+    "3PL / logistics provider": [
+        "Plan & Simulate",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Control Tower & Governance",
+    ],
+    "Parcel / last-mile carrier": [
+        "Plan & Simulate",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Control Tower & Governance",
+    ],
+    "Freight forwarder / cargo operator": [
+        "Plan & Simulate",
+        "Deliver & Transport",
+        "Trade, Compliance & Documents",
+        "Control Tower & Governance",
+    ],
+    "CPG / bottler": [
+        "Plan & Simulate",
+        "Source & Procure",
+        "Make & Package",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Control Tower & Governance",
+    ],
+    "Manufacturer": [
+        "Plan & Simulate",
+        "Source & Procure",
+        "Make & Package",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Control Tower & Governance",
+    ],
+    "Pharma / MedTech manufacturer": [
+        "Plan & Simulate",
+        "Source & Procure",
+        "Make & Package",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Trade, Compliance & Documents",
+        "Control Tower & Governance",
+    ],
+    "Distributor / wholesaler": [
+        "Plan & Simulate",
+        "Source & Procure",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Control Tower & Governance",
+    ],
+    "Retail / omnichannel operator": [
+        "Plan & Simulate",
+        "Source & Procure",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Control Tower & Governance",
+    ],
+    "Asset-heavy network operator": [
+        "Plan & Simulate",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Control Tower & Governance",
+    ],
+    "Procurement-led enterprise": [
+        "Plan & Simulate",
+        "Source & Procure",
+        "Trade, Compliance & Documents",
+        "Control Tower & Governance",
+    ],
+    "Enterprise data / platform team": [
+        "Plan & Simulate",
+        "Source & Procure",
+        "Make & Package",
+        "Store & Fulfill",
+        "Deliver & Transport",
+        "Trade, Compliance & Documents",
+        "Control Tower & Governance",
+    ],
+}
 
 
 SYSTEM_PROMPT = """You are an enterprise supply-chain consulting analyst.
@@ -104,7 +199,6 @@ Return JSON with EXACTLY these keys:
   "region": str,
   "confidence": float 0..1,
   "summary": str (1-2 sentences),
-  "relevant_value_chain_steps": list of step names drawn from {UNIVERSAL_STEPS!r},
   "likely_revenue_drivers": [
     {{"name": str, "exposure_pct": number 0..100, "ai_leverage_range": "X-Y%"}}
   ],
@@ -118,7 +212,6 @@ Return JSON with EXACTLY these keys:
 
 Rules:
 - archetype MUST be one of the supported values; if unsure, pick the closest.
-- relevant_value_chain_steps must use the universal step names verbatim.
 - 3 to 8 revenue drivers and 4 to 9 cost pools.
 - Be specific to the company's likely operating model (e.g. bottler, parcel carrier).
 - Only return the JSON object. No surrounding markdown.
@@ -138,7 +231,10 @@ def get_config() -> dict[str, Any]:
         "excel_present": EXCEL_PATH.exists(),
         "excel_name": EXCEL_PATH.name,
         "supported_archetypes": SUPPORTED_ARCHETYPES,
+        "supported_industries": SUPPORTED_INDUSTRIES,
+        "supported_objectives": SUPPORTED_OBJECTIVES,
         "universal_steps": UNIVERSAL_STEPS,
+        "archetype_stage_mapping": ARCHETYPE_STAGE_MAPPING,
     }
 
 
@@ -157,7 +253,12 @@ def get_mapping() -> dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Could not open workbook: {e}")
 
-    mapping_sheet = "Mapping" if "Mapping" in xl.sheet_names else xl.sheet_names[0]
+    if "Demo Catalog" in xl.sheet_names:
+        mapping_sheet = "Demo Catalog"
+    elif "Mapping" in xl.sheet_names:
+        mapping_sheet = "Mapping"
+    else:
+        mapping_sheet = xl.sheet_names[0]
     try:
         df = pd.read_excel(xl, mapping_sheet)
     except Exception as e:
@@ -361,10 +462,9 @@ def admin_download_backup(
     backup_path = EXCEL_PATH.with_suffix(EXCEL_PATH.suffix + ".bak")
     if not backup_path.exists():
         raise HTTPException(status_code=404, detail="No backup available.")
+
     # Serve under a friendly name like `supply_chain_demo_mapping.previous.xlsx`
-    download_name = (
-        EXCEL_PATH.stem + ".previous" + EXCEL_PATH.suffix
-    )
+    download_name = EXCEL_PATH.stem + ".previous" + EXCEL_PATH.suffix
     return FileResponse(
         backup_path,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
