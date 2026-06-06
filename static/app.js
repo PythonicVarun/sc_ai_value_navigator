@@ -261,14 +261,9 @@ function initApp(config, rows) {
 
     document.getElementById("close-stage-btn").addEventListener("click", () => {
         document.getElementById("stage-detail-panel").style.display = "none";
-        document
-            .querySelectorAll(".timeline-step")
-            .forEach((el) => el.classList.remove("active"));
-        document
-            .querySelectorAll(".step-icon")
-            .forEach((el) => el.classList.remove("active"));
         activeStage = null;
         activeStep = null;
+        renderTimeline();
     });
 
     // Demo cards scroll arrows
@@ -644,7 +639,6 @@ function renderTimeline() {
         });
 
         const numDemos = filteredDemos.length;
-        const numSteps = filteredSteps.length;
 
         const iconSvg =
             stageIcons[stage.name] ||
@@ -670,6 +664,11 @@ function renderTimeline() {
             ? "High relevance"
             : "Medium relevance";
 
+        const metaHtml =
+            numDemos > 0
+                ? `<div class="step-meta">${numDemos} ${numDemos === 1 ? "case study/accelerator" : "case studies/accelerators"}</div>`
+                : `<div class="step-meta" style="display: none;"></div>`;
+
         el.innerHTML = `
             <div class="step-icon-wrapper">
                 <div class="step-icon ${activeStage === stage ? "active" : ""}">
@@ -680,7 +679,7 @@ function renderTimeline() {
             </div>
             <div class="step-title">${idx + 1}. ${stage.name}</div>
             <div class="step-desc">${filteredSteps.length > 0 ? filteredSteps[0].name : ""}</div>
-            <div class="step-meta">${numDemos} demos | ${numSteps} steps</div>
+            ${metaHtml}
             <div class="step-relevance"><span class="dot ${relevanceDotClass}"></span> ${relevanceText}</div>
             <div class="active-line"></div>
         `;
