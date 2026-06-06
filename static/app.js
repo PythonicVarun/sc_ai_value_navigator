@@ -226,6 +226,8 @@ function initApp(config, rows) {
         }
 
         if (row["Demo or Case Asset"]) {
+            const previewVal = row["Demo Preview"] || "";
+            const previewUrl = (previewVal && previewVal !== "nan" && previewVal.trim() !== "") ? previewVal.trim() : "";
             stage.demos.push({
                 step: stepName,
                 pain_point: row["Client Question / Pain Point"],
@@ -238,6 +240,7 @@ function initApp(config, rows) {
                 desc: row["Description / Sales Positioning"],
                 conversation: row["Best-fit Client Conversation"],
                 link: row["Demo Hyperlink"],
+                preview: previewUrl,
             });
         }
     });
@@ -460,9 +463,17 @@ function initApp(config, rows) {
                     a.href = link;
                     if (link !== "#") a.target = "_blank";
 
+                    let imageHtml = "";
+                    if (d.preview) {
+                        const proxiedUrl = `https://proxy.pythonicvarun.me/${d.preview}`;
+                        imageHtml = `<img src="${proxiedUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" alt="preview" />`;
+                    } else {
+                        imageHtml = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+                    }
+
                     a.innerHTML = `
                         <div class="search-result-image">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                            ${imageHtml}
                         </div>
                         <div class="search-result-content">
                             <div class="search-result-title">${d.asset_name}</div>
@@ -772,8 +783,16 @@ function renderDemosForStep(step) {
     demos.forEach((demo) => {
         const card = document.createElement("div");
         card.className = "demo-card";
+        let cardImageHtml = "";
+        if (demo.preview) {
+            const proxiedUrl = `https://proxy.pythonicvarun.me/${demo.preview}`;
+            cardImageHtml = `<div class="card-image" style="background-image: url('${proxiedUrl}'); background-size: cover; background-position: center;"></div>`;
+        } else {
+            cardImageHtml = `<div class="card-image bg-gray">Demo Preview</div>`;
+        }
+
         card.innerHTML = `
-            <div class="card-image bg-gray"></div>
+            ${cardImageHtml}
             <div class="card-content">
                 <h3>${demo.asset_name}</h3>
                 <p>${demo.desc}</p>
@@ -806,6 +825,7 @@ function renderDemosForStep(step) {
                 demo.link !== "TBD / internal app" &&
                 demo.link !== "nan"
             ) {
+                cardImage.style.cursor = "pointer";
                 cardImage.title = "Open demo in new tab";
                 cardImage.addEventListener("click", (e) => {
                     e.stopPropagation();
